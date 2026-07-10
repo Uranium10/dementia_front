@@ -47,7 +47,7 @@ export default function LandingPage() {
             {/* 클릭 시 navigate('/prompt')가 실행되어 프롬프트 페이지로 넘어갑니다. */}
             <div
               onClick={() => navigate('/prompt')}
-              className="relative flex-1 bg-gradient-to-br from-blue-600 to-indigo-700 slant-left hover:flex-[1.2] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group cursor-pointer z-10 shadow-[8px_0_20px_rgba(0,0,0,0.15)]"
+              className="relative flex-1 min-w-0 bg-gradient-to-br from-blue-600 to-indigo-700 slant-left hover:flex-[1.2] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group cursor-pointer z-10 shadow-[8px_0_20px_rgba(0,0,0,0.15)]"
             >
               {/* 패널 내부 컨텐츠 정렬을 위한 래퍼 */}
               <div className="w-full sm:w-[80%] h-full flex flex-col items-center justify-center p-10 mx-auto transition-transform duration-700 group-hover:scale-[1.02] group-hover:-translate-y-2">
@@ -69,10 +69,12 @@ export default function LandingPage() {
                   <FileText className="w-10 h-10 opacity-90" />
                   치매 상담 및 진단
                 </h3>
-                {/* 세부 설명은 호버 시에만 나타나도록 투명도(opacity-0)를 조절했습니다. */}
-                <p className="text-blue-100 mt-6 font-medium text-center max-w-md text-lg opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 leading-relaxed">
-                  AI 챗봇을 통한 간이 자가진단 및 거주 지역의 치매안심센터 서비스망을 확인하세요.
-                </p>
+                {/* 세부 설명은 항상 보이되, 호버 전에는 맞닿는 오른쪽 경계면만 블러 처리됩니다. */}
+                <div className="w-full mt-6 overflow-hidden [mask-image:linear-gradient(to_right,black_85%,transparent)] group-hover:[mask-image:none] transition-all">
+                  <p className="text-blue-100 font-medium text-center text-lg whitespace-nowrap opacity-80 leading-relaxed transition-opacity duration-500 group-hover:opacity-100">
+                    AI 챗봇을 통한 간이 자가진단 및 거주 지역의<br /> 치매안심센터 서비스망을 확인하세요.
+                  </p>
+                </div>
 
                 {/* 호버 시(마우스를 올렸을 때) 아래에서 부드럽게 나타나는 액션 버튼 */}
                 <div className="mt-10 flex items-center gap-2 text-blue-700 font-bold bg-white px-8 py-3.5 rounded-full opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-100 shadow-xl hover:bg-blue-50">
@@ -83,7 +85,7 @@ export default function LandingPage() {
 
             {/* --- 오른쪽 패널: 예방 가이드 (Disabled / 준비 중) --- */}
             {/* -ml-[150px]: 왼쪽의 사선 모양(slant-left)에 맞물리도록 왼쪽 마진을 당겨 빈틈을 없앱니다. */}
-            <div className="relative flex-1 bg-slate-50 slant-right transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] -ml-[150px] z-0 group grayscale-[0.85] hover:grayscale-[0.6] hover:flex-[1.2] opacity-90 cursor-not-allowed">
+            <div className="relative flex-1 min-w-0 bg-slate-50 slant-right transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] -ml-[150px] z-0 group grayscale-[0.85] hover:grayscale-[0.6] hover:flex-[1.2] opacity-90 cursor-not-allowed">
 
               {/* 비활성화 상태를 시각적으로 강조하는 오버레이 (Hover 시 나타남) */}
               <div className="absolute inset-0 bg-slate-200/50 backdrop-blur-[2px] z-20 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
@@ -106,9 +108,12 @@ export default function LandingPage() {
                   <HeartPulse className="w-10 h-10 opacity-70" />
                   인지 능력 예방 가이드
                 </h3>
-                <p className="text-slate-400 mt-6 font-medium text-center max-w-md text-lg opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 leading-relaxed">
-                  치매 예방을 위한 신체 운동, 두뇌 학습 가이드 및 생활 습관 개선 프로그램을 제공합니다.
-                </p>
+                {/* 세부 설명은 항상 보이되, 호버 전에는 맞닿는 왼쪽 경계면만 블러 처리됩니다. */}
+                <div className="w-full mt-6 overflow-hidden [mask-image:linear-gradient(to_left,black_85%,transparent)] group-hover:[mask-image:none] transition-all">
+                  <p className="text-slate-400 font-medium text-center text-lg whitespace-nowrap opacity-80 leading-relaxed transition-opacity duration-500 group-hover:opacity-100">
+                    치매 예방을 위한 신체 운동, 두뇌 학습 가이드 및<br /> 생활 습관 개선 프로그램을 제공합니다.
+                  </p>
+                </div>
               </div>
 
             </div>
