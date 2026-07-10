@@ -12,7 +12,7 @@ import './App.css';
 function App() {
   // 현재 브라우저의 경로(URL) 정보를 가져오는 React Router Hook입니다.
   const location = useLocation();
-  
+
   // 프롬프트(채팅) 페이지는 자체적인 전용 헤더와 뒤로가기 버튼이 있으므로,
   // 글로벌 사이트 헤더를 숨기기 위한 조건입니다.
   const hideGlobalHeader = location.pathname === '/prompt';
@@ -21,7 +21,7 @@ function App() {
     <>
       {/* 조건부 헤더 렌더링: hideGlobalHeader가 false일 때만 <Header />가 화면에 나옵니다. */}
       {!hideGlobalHeader && <Header />}
-      
+
       {/* 페이지 라우팅 영역 */}
       <Routes>
         <Route path="/" element={<LandingPage />} />
