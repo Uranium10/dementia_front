@@ -9,8 +9,12 @@ export default function AuthButton() {
   const menuRef = useRef(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) console.error("Supabase getSession error:", error);
       setSession(session);
+      setLoading(false);
+    }).catch(err => {
+      console.error("Auth exception:", err);
       setLoading(false);
     });
 
