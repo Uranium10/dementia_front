@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Brain, ShieldCheck } from 'lucide-react';
+import AuthButton from './AuthButton';
 
 /**
  * 공통 사이트 헤더 컴포넌트 (Global Navigation Bar)
@@ -23,14 +24,18 @@ export default function Header() {
           </div>
         </Link>
         
-        {/* 네비게이션 메뉴 */}
-        <nav className="hidden md:flex items-center space-x-8 text-sm font-semibold text-slate-500">
-          <Link to="/" className="hover:text-blue-600 transition-colors">서비스 소개</Link>
-          <Link to="/guide" className="hover:text-blue-600 transition-colors">이용 가이드</Link>
-          <Link to="/privacy" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
-            <ShieldCheck className="w-4 h-4" />개인정보처리방침
-          </Link>
-        </nav>
+        {/* 네비게이션 메뉴 및 로그인 버튼 */}
+        <div className="flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-8 text-sm font-semibold text-slate-500">
+            <Link to="/" className="hover:text-blue-600 transition-colors">서비스 소개</Link>
+            <Link to="/guide" className="hover:text-blue-600 transition-colors">이용 가이드</Link>
+            <Link to="/privacy" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4" />개인정보처리방침
+            </Link>
+          </nav>
+          
+          <AuthButton />
+        </div>
         
       </div>
     </header>
