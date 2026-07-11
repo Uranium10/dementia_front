@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Brain, HeartPulse, Activity, Lock, ArrowRight, ShieldCheck, FileText, Stethoscope, ClipboardList } from 'lucide-react';
-// 기존의 체크무늬 문제가 있던 AI 이미지는 사용하지 않고, 고해상도 벡터 아이콘 컴포지션으로 완벽하게 대체합니다.
+import { supabase } from '../lib/supabaseClient';
 
 /**
  * LandingPage 컴포넌트
@@ -9,19 +9,30 @@ import { Brain, HeartPulse, Activity, Lock, ArrowRight, ShieldCheck, FileText, S
  * - '치매 진단'과 '예방 가이드' 두 가지 핵심 기능 중 하나를 선택할 수 있는 대형 Split(분할) 레이아웃을 제공합니다.
  */
 export default function LandingPage() {
-  // 화면 이동(라우팅)을 제어하는 React Router의 훅입니다.
-  // 이 훅을 호출하여 navigate 함수를 얻고, navigate('/경로') 형식으로 사용합니다.
   const navigate = useNavigate();
 
+  const handleConsultClick = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session) {
+      navigate('/prompt');
+    } else {
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+          queryParams: {
+            prompt: 'select_account',
+          },
+        },
+      });
+    }
+  };
+
   return (
-    // 최상위 래퍼: 최소 높이를 화면 전체(min-h-screen)로 잡고, 배경은 연한 회색(bg-slate-50)으로 깔끔하게 설정합니다.
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-200">
-
-
-
       {/* 2. 메인 콘텐츠 영역 (Hero 텍스트 + 선택 레이아웃) */}
       <main className="flex-1 flex flex-col w-full pb-20" id="hero">
-
         {/* 서비스 핵심 문구를 보여주는 Hero 섹션 */}
         <div className="py-20 text-center px-4 max-w-3xl mx-auto relative z-40">
           <div className="inline-flex items-center space-x-2 bg-blue-50 border border-blue-100 text-blue-700 px-4 py-1.5 rounded-full text-xs font-bold mb-6">
@@ -39,14 +50,11 @@ export default function LandingPage() {
         </div>
 
         {/* 3. 진단 / 예방 분할 선택 레이아웃 (Diagonal Split) */}
-        {/* 여백 개선: max-w-7xl로 좌우 폭을 넓게 쓰고, 높이를 650px로 시원하게 키웠습니다. */}
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex w-full h-[650px] rounded-[2.5rem] overflow-hidden shadow-2xl relative bg-white border border-slate-200">
-
             {/* --- 왼쪽 패널: 치매 진단 및 상담 (Active) --- */}
-            {/* 클릭 시 navigate('/prompt')가 실행되어 프롬프트 페이지로 넘어갑니다. */}
             <div
-              onClick={() => navigate('/prompt')}
+              onClick={handleConsultClick}
               className="relative flex-1 min-w-0 bg-gradient-to-br from-blue-600 to-indigo-700 slant-left hover:flex-[1.2] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group cursor-pointer z-10 shadow-[8px_0_20px_rgba(0,0,0,0.15)]"
             >
               {/* 패널 내부 컨텐츠 정렬을 위한 래퍼 */}
