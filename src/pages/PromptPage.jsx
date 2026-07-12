@@ -12,6 +12,18 @@ const CHATBOT_SERVER = import.meta.env.VITE_CHATBOT_SERVER || 'http://localhost:
 export default function PromptPage() {
   const navigate = useNavigate();
 
+  // 비로그인 사용자 접근 방지 (Route Guard)
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert("잘못된 접근입니다.");
+        navigate('/');
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+
   // 입력창의 텍스트 상태를 관리합니다.
   const [inputText, setInputText] = useState('');
 
