@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Send, User, Bot, Brain, ChevronRight, Square } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 
+const CHATBOT_SERVER = import.meta.env.VITE_CHATBOT_SERVER || 'http://localhost:8000';
 /**
  * PromptPage (프롬프트 페이지)
  * - 사용자가 치매 상담 및 진단을 위해 AI와 대화하는 채팅 기반 UI 페이지입니다.
@@ -64,7 +65,7 @@ export default function PromptPage() {
 
       let response;
       try {
-        response = await fetch('http://localhost:8000/api/chat', {
+        response = await fetch(`${CHATBOT_SERVER}/api/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user_id: userId, user_name: userName, messages: messageHistory }),
