@@ -54,7 +54,7 @@ export default function PromptPage() {
       setMessages(prev => [...prev, { id: tempAiMsgId, sender: 'ai', text: '답변을 생성하고 있습니다...', options: [], sources: [] }]);
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 45000);
+      const timeoutId = setTimeout(() => controller.abort(), 450000);
 
       const { data: { session } } = await supabase.auth.getSession();
       const user = session?.user;
@@ -107,7 +107,7 @@ export default function PromptPage() {
       console.error('Chat API Error:', error);
       let errorMessage = '서버에 연결할 수 없습니다. 백엔드 서버가 켜져 있는지 확인해 주세요.';
       if (error.name === 'AbortError') {
-        errorMessage = '서버 응답 시간이 초과되었습니다(15초). 네트워크 연결 상태를 확인하거나 잠시 후 다시 시도해 주세요.';
+        errorMessage = '서버 응답 시간이 초과되었습니다(45초). 네트워크 연결 상태를 확인하거나 잠시 후 다시 시도해 주세요.';
       } else if (error.message.startsWith('HTTP_')) {
         const statusCode = error.message.split('_')[1];
         errorMessage = `서버 내부 오류가 발생했습니다 (상태 코드: ${statusCode}). 잠시 후 다시 시도해 주세요.`;
@@ -178,11 +178,11 @@ export default function PromptPage() {
               <div className="flex flex-col gap-3 max-w-[85%]">
                 {/* 텍스트 말풍선 */}
                 <div className={`p-4 rounded-2xl shadow-sm border leading-relaxed whitespace-pre-wrap ${msg.sender === 'user'
-                    ? 'bg-indigo-600 text-white rounded-tr-sm border-indigo-700'
-                    : 'bg-white text-slate-700 rounded-tl-sm border-slate-200'
+                  ? 'bg-indigo-600 text-white rounded-tr-sm border-indigo-700'
+                  : 'bg-white text-slate-700 rounded-tl-sm border-slate-200'
                   }`}>
                   {msg.text}
-                  
+
                   {/* Sources 렌더링 (AI 메시지이고 sources가 있을 때만) */}
                   {msg.sender === 'ai' && msg.sources && msg.sources.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-slate-200/60">
@@ -238,20 +238,19 @@ export default function PromptPage() {
             onChange={(e) => setInputText(e.target.value)}
             placeholder={
               isTyping ? "AI가 답변을 작성하고 있습니다..." :
-              isInputLocked ? "제시된 버튼을 눌러 선택해 주세요." :
-              "증상이나 궁금한 점을 입력해 주세요..."
+                isInputLocked ? "제시된 버튼을 눌러 선택해 주세요." :
+                  "증상이나 궁금한 점을 입력해 주세요..."
             }
             disabled={isTyping || isInputLocked}
             className="w-full bg-slate-100 border border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-full py-4 pl-6 pr-14 outline-none transition-all text-slate-700 placeholder:text-slate-400 disabled:bg-slate-200 disabled:cursor-not-allowed"
           />
-          <button 
+          <button
             type="submit"
             disabled={!inputText.trim() || isTyping || isInputLocked}
-            className={`absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 text-white rounded-full flex items-center justify-center transition-colors shadow-sm ${
-              isTyping || isInputLocked
-                ? 'bg-slate-400 cursor-not-allowed' 
-                : 'bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300'
-            }`}
+            className={`absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 text-white rounded-full flex items-center justify-center transition-colors shadow-sm ${isTyping || isInputLocked
+              ? 'bg-slate-400 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300'
+              }`}
           >
             {isTyping ? <Square className="w-4 h-4 fill-current" /> : <Send className="w-4 h-4 ml-1" />}
           </button>
