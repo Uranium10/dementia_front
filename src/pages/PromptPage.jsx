@@ -36,36 +36,26 @@ export default function PromptPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // 사용자가 폼을 제출(엔터키 또는 전송 버튼 클릭)할 때 실행되는 함수입니다.
-  const handleSend = async (e) => {
-    e.preventDefault(); // 페이지 새로고침 방지
-    if (!inputText.trim()) return; // 빈 칸이면 무시
-
-    const currentText = inputText;
-    // 1. 사용자가 입력한 메시지를 채팅창에 추가합니다.
-    const newUserMsg = { id: Date.now(), sender: 'user', text: currentText, options: [] };
+  // 공통 메시지 전송 로직
+  const sendMessage = async (displayMessage, backendValue) => {
+    const newUserMsg = { id: Date.now(), sender: 'user', text: displayMessage, value: backendValue, options: [], sources: [] };
     setMessages(prev => [...prev, newUserMsg]);
-    setInputText(''); // 입력창 초기화
 
-    // 2. 서버로 전송할 메시지 내역(히스토리) 구성
     const messageHistory = messages.map(m => ({
       role: m.sender === 'user' ? 'user' : 'assistant',
-      content: m.text
+      // 백엔드로 보낼 때는 value가 있으면 value를, 없으면 text를 보냅니다.
+      content: m.value || m.text
     }));
-    messageHistory.push({ role: 'user', content: currentText }); // 현재 입력된 메시지도 포함
+    messageHistory.push({ role: 'user', content: backendValue });
 
     const tempAiMsgId = Date.now() + 1;
-
     try {
       setIsTyping(true);
-      // 3. 임시 로딩 메시지 띄우기
-      setMessages(prev => [...prev, { id: tempAiMsgId, sender: 'ai', text: '답변을 생성하고 있습니다...', options: [] }]);
+      setMessages(prev => [...prev, { id: tempAiMsgId, sender: 'ai', text: '답변을 생성하고 있습니다...', options: [], sources: [] }]);
 
-      // 서버 연결 지연(무한 로딩) 방지를 위한 AbortController (15초 타임아웃)
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 45000);
 
-      // 4. 세션에서 유저 정보 가져오기
       const { data: { session } } = await supabase.auth.getSession();
       const user = session?.user;
       const metadata = user?.user_metadata || {};
@@ -74,39 +64,47 @@ export default function PromptPage() {
 
       let response;
       try {
-        // 5. FastAPI 서버로 HTTP POST 요청 보내기
         response = await fetch('http://localhost:8000/api/chat', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            user_id: userId,
-            user_name: userName,
-            messages: messageHistory,
-          }),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: userId, user_name: userName, messages: messageHistory }),
           signal: controller.signal
         });
       } finally {
-        clearTimeout(timeoutId); // 통신이 끝나면 타임아웃 해제
+        clearTimeout(timeoutId);
       }
 
-      if (!response.ok) {
-        throw new Error(`HTTP_${response.status}`);
-      }
-
+      if (!response.ok) throw new Error(`HTTP_${response.status}`);
       const data = await response.json();
+      const resData = data.response;
 
-      // 6. 로딩 메시지를 실제 답변으로 교체
+      let newText = '';
+      let newOptions = [];
+      let newSources = [];
+      let newAllowFreeInput = true;
+
+      // 새 출력 규격에 맞게 파싱
+      if (resData?.type === 'reply') {
+        newText = resData.content?.text || '';
+        newSources = resData.sources || [];
+      } else if (resData?.type === 'choices') {
+        newText = resData.content?.question || '';
+        newOptions = resData.content?.options || [];
+        if (resData.content?.allow_free_input === false) {
+          newAllowFreeInput = false;
+        }
+      } else {
+        // 기존 대비용 폴백
+        newText = data.reply || '응답을 처리할 수 없습니다.';
+      }
+
       setMessages(prev => prev.map(msg =>
         msg.id === tempAiMsgId
-          ? { ...msg, text: data.reply }
+          ? { ...msg, text: newText, options: newOptions, sources: newSources, allowFreeInput: newAllowFreeInput }
           : msg
       ));
     } catch (error) {
       console.error('Chat API Error:', error);
-
-      // 에러 종류에 따른 맞춤형 메시지
       let errorMessage = '서버에 연결할 수 없습니다. 백엔드 서버가 켜져 있는지 확인해 주세요.';
       if (error.name === 'AbortError') {
         errorMessage = '서버 응답 시간이 초과되었습니다(15초). 네트워크 연결 상태를 확인하거나 잠시 후 다시 시도해 주세요.';
@@ -114,33 +112,31 @@ export default function PromptPage() {
         const statusCode = error.message.split('_')[1];
         errorMessage = `서버 내부 오류가 발생했습니다 (상태 코드: ${statusCode}). 잠시 후 다시 시도해 주세요.`;
       }
-
-      // 에러 발생 시 임시 로딩 메시지를 지우고 에러 메시지 출력
       setMessages(prev => prev.filter(msg => msg.id !== tempAiMsgId).concat(
-        { id: Date.now() + 2, sender: 'ai', text: errorMessage, options: [] }
+        { id: Date.now() + 2, sender: 'ai', text: errorMessage, options: [], sources: [] }
       ));
     } finally {
       setIsTyping(false);
     }
   };
 
-  // AI가 제시한 선택지(버튼)를 사용자가 클릭했을 때 실행되는 함수입니다.
-  const handleOptionClick = (optionText) => {
-    // 1. 클릭한 옵션을 사용자의 메시지처럼 화면에 띄웁니다.
-    const newUserMsg = { id: Date.now(), sender: 'user', text: optionText, options: [] };
-    setMessages(prev => [...prev, newUserMsg]);
-
-    // 2. 옵션에 대한 후속 더미 응답을 띄웁니다.
-    setTimeout(() => {
-      const finalAiMsg = {
-        id: Date.now() + 1,
-        sender: 'ai',
-        text: `"${optionText}" 증상이 가장 걱정되시는군요.\n이러한 증상은 조기 발견과 전문적인 검진이 매우 중요합니다. 거주하시는 지역(예: 서울시 강남구)을 입력해 주시면, 가장 가까운 치매안심센터 위치와 예약 방법을 안내해 드리겠습니다.`,
-        options: []
-      };
-      setMessages(prev => [...prev, finalAiMsg]);
-    }, 800);
+  const handleSend = async (e) => {
+    e.preventDefault();
+    if (!inputText.trim()) return;
+    const currentText = inputText;
+    setInputText('');
+    await sendMessage(currentText, currentText);
   };
+
+  const handleOptionClick = (opt) => {
+    // opt는 { label, value } 객체입니다.
+    // 화면에는 label을 띄우고, 서버로는 value를 보냅니다.
+    sendMessage(opt.label, opt.value);
+  };
+
+  // 마지막 AI 메시지를 확인하여 입력창을 막을지 결정합니다.
+  const lastAiMessage = [...messages].reverse().find(m => m.sender === 'ai');
+  const isInputLocked = lastAiMessage?.allowFreeInput === false;
 
   return (
     // 전체 레이아웃
@@ -186,6 +182,27 @@ export default function PromptPage() {
                     : 'bg-white text-slate-700 rounded-tl-sm border-slate-200'
                   }`}>
                   {msg.text}
+                  
+                  {/* Sources 렌더링 (AI 메시지이고 sources가 있을 때만) */}
+                  {msg.sender === 'ai' && msg.sources && msg.sources.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-slate-200/60">
+                      <p className="text-xs font-bold text-slate-500 mb-2">참고 자료</p>
+                      <ul className="space-y-2">
+                        {msg.sources.map((src, idx) => (
+                          <li key={idx} className="bg-slate-50 p-3 rounded-lg text-sm border border-slate-100">
+                            {src.url ? (
+                              <a href={src.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-600 hover:underline">
+                                {src.title}
+                              </a>
+                            ) : (
+                              <span className="font-semibold text-slate-700">{src.title}</span>
+                            )}
+                            <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{src.snippet}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
 
                 {/* AI 메시지에 선택지(options) 배열이 있다면 버튼 목록을 렌더링합니다. */}
@@ -197,7 +214,7 @@ export default function PromptPage() {
                         onClick={() => handleOptionClick(opt)}
                         className="text-left w-full bg-white border border-blue-200 hover:border-blue-500 hover:bg-blue-50 text-slate-700 p-3 rounded-xl shadow-sm transition-colors flex items-center justify-between group"
                       >
-                        <span className="font-medium text-sm">{opt}</span>
+                        <span className="font-medium text-sm">{opt.label || opt}</span>
                         <ChevronRight className="w-4 h-4 text-blue-400 group-hover:text-blue-600" />
                       </button>
                     ))}
@@ -219,15 +236,19 @@ export default function PromptPage() {
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder={isTyping ? "AI가 답변을 작성하고 있습니다..." : "증상이나 궁금한 점을 입력해 주세요..."}
-            disabled={isTyping}
+            placeholder={
+              isTyping ? "AI가 답변을 작성하고 있습니다..." :
+              isInputLocked ? "제시된 버튼을 눌러 선택해 주세요." :
+              "증상이나 궁금한 점을 입력해 주세요..."
+            }
+            disabled={isTyping || isInputLocked}
             className="w-full bg-slate-100 border border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-full py-4 pl-6 pr-14 outline-none transition-all text-slate-700 placeholder:text-slate-400 disabled:bg-slate-200 disabled:cursor-not-allowed"
           />
           <button 
             type="submit"
-            disabled={!inputText.trim() || isTyping}
+            disabled={!inputText.trim() || isTyping || isInputLocked}
             className={`absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 text-white rounded-full flex items-center justify-center transition-colors shadow-sm ${
-              isTyping 
+              isTyping || isInputLocked
                 ? 'bg-slate-400 cursor-not-allowed' 
                 : 'bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300'
             }`}

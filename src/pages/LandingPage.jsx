@@ -13,7 +13,7 @@ export default function LandingPage() {
 
   const handleConsultClick = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    
+
     if (session) {
       navigate('/prompt');
     } else {
@@ -73,9 +73,9 @@ export default function LandingPage() {
                   <ClipboardList className="w-12 h-12 text-blue-200 absolute bottom-6 right-6 drop-shadow-lg opacity-80" />
                 </div>
 
-                <h3 className="text-4xl font-extrabold text-white tracking-tight flex items-center gap-3">
+                <h3 className="text-4xl font-extrabold text-white tracking-tight whitespace-nowrap flex items-center gap-3">
                   <FileText className="w-10 h-10 opacity-90" />
-                  치매 상담 및 진단
+                  치매 상담 및 안내
                 </h3>
                 {/* 세부 설명은 항상 보이되, 호버 전에는 맞닿는 오른쪽 경계면만 블러 처리됩니다. */}
                 <div className="w-full mt-6 overflow-hidden [mask-image:linear-gradient(to_right,black_85%,transparent)] group-hover:[mask-image:none] transition-all">
@@ -112,7 +112,7 @@ export default function LandingPage() {
                   <HeartPulse className="w-12 h-12 text-slate-300 absolute top-8 right-8" />
                 </div>
 
-                <h3 className="text-4xl font-extrabold text-slate-500 tracking-tight flex items-center gap-3">
+                <h3 className="text-4xl font-extrabold text-slate-500 whitespace-nowrap tracking-tight flex items-center gap-3">
                   <HeartPulse className="w-10 h-10 opacity-70" />
                   인지 능력 예방 가이드
                 </h3>
