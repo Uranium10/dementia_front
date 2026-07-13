@@ -57,8 +57,8 @@ export default function LandingPage() {
               onClick={handleConsultClick}
               className="relative flex-1 min-w-0 bg-gradient-to-br from-blue-600 to-indigo-700 slant-left hover:flex-[1.2] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group cursor-pointer z-10 shadow-[8px_0_20px_rgba(0,0,0,0.15)]"
             >
-              {/* 패널 내부 컨텐츠 정렬을 위한 래퍼 */}
-              <div className="w-full sm:w-[80%] h-full flex flex-col items-center justify-center p-10 mx-auto transition-transform duration-700 group-hover:scale-[1.02] group-hover:-translate-y-2">
+              {/* 패널 내부 컨텐츠 정렬을 위한 래퍼 (사선 영역을 제외한 곳의 완벽한 중앙 정렬을 위해 padding 조절) */}
+              <div className="w-full h-full flex flex-col items-center justify-center pl-[34px] pr-[65px] sm:pr-[140px] pt-24 pb-6 transition-transform duration-700 group-hover:scale-[1.02] group-hover:-translate-y-2">
 
                 {/* 
                   [미감 개선] 깨진 이미지 대신 CSS Glassmorphism과 아이콘을 활용한 커스텀 그래픽 
@@ -73,8 +73,7 @@ export default function LandingPage() {
                   <ClipboardList className="w-12 h-12 text-blue-200 absolute bottom-6 right-6 drop-shadow-lg opacity-80" />
                 </div>
 
-                <h3 className="text-4xl font-extrabold text-white tracking-tight whitespace-nowrap flex items-center gap-3">
-                  <FileText className="w-10 h-10 opacity-90" />
+                <h3 className="text-4xl font-extrabold text-white tracking-tight text-center whitespace-nowrap">
                   치매 상담 및 안내
                 </h3>
                 {/* 세부 설명은 항상 보이되, 호버 전에는 맞닿는 오른쪽 경계면만 블러 처리됩니다. */}
@@ -103,8 +102,8 @@ export default function LandingPage() {
                 </span>
               </div>
 
-              {/* 시각적 오프셋(-ml-150px)을 상쇄하기 위해 내용물을 오른쪽(ml-150px)으로 밀어 중앙을 맞춥니다. */}
-              <div className="w-full sm:w-[80%] h-full flex flex-col items-center justify-center p-10 mx-auto ml-[75px] sm:ml-[150px] transition-transform duration-700 group-hover:scale-[0.98] opacity-60">
+              {/* 시각적 오프셋(-ml-150px)을 상쇄하기 위해 내용물을 오른쪽(pl-150px)으로 밀어 완벽한 대칭 중앙을 맞춥니다. */}
+              <div className="w-full h-full flex flex-col items-center justify-center pr-[34px] pl-[65px] sm:pl-[140px] pt-24 pb-6 transition-transform duration-700 group-hover:scale-[0.98] opacity-60">
 
                 {/* 미감 개선: 오른쪽 역시 SVG 아이콘 기반의 모던한 컴포지션으로 대체 */}
                 <div className="relative bg-white p-10 rounded-full border border-slate-200 mb-10 shadow-md flex items-center justify-center w-48 h-48">
@@ -112,8 +111,7 @@ export default function LandingPage() {
                   <HeartPulse className="w-12 h-12 text-slate-300 absolute top-8 right-8" />
                 </div>
 
-                <h3 className="text-4xl font-extrabold text-slate-500 whitespace-nowrap tracking-tight flex items-center gap-3">
-                  <HeartPulse className="w-10 h-10 opacity-70" />
+                <h3 className="text-4xl font-extrabold text-slate-500 tracking-tight text-center">
                   인지 능력 예방 가이드
                 </h3>
                 {/* 세부 설명은 항상 보이되, 호버 전에는 맞닿는 왼쪽 경계면만 블러 처리됩니다. */}
@@ -121,6 +119,11 @@ export default function LandingPage() {
                   <p className="text-slate-400 font-medium text-center text-lg whitespace-nowrap opacity-80 leading-relaxed transition-opacity duration-500 group-hover:opacity-100">
                     치매 예방을 위한 신체 운동, 두뇌 학습 가이드 및<br /> 생활 습관 개선 프로그램을 제공합니다.
                   </p>
+                </div>
+
+                {/* 세로 정렬(높이)을 왼쪽 패널과 완벽하게 맞추기 위한 투명(Invisible) 버튼 스페이서 */}
+                <div className="mt-10 flex items-center gap-2 px-8 py-3.5 invisible" aria-hidden="true">
+                  높이 맞춤용 텍스트 <ArrowRight className="w-5 h-5" />
                 </div>
               </div>
 
