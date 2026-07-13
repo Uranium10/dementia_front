@@ -29,6 +29,7 @@ export default function Header() {
           <nav className="hidden md:flex items-center space-x-8 text-sm font-semibold text-slate-500">
             <Link to="/" className="hover:text-blue-600 transition-colors">서비스 소개</Link>
             <Link to="/guide" className="hover:text-blue-600 transition-colors">이용 가이드</Link>
+            <Link to="/reference" className="hover:text-blue-600 transition-colors">데이터 출처</Link>
             <Link to="/privacy" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4" />개인정보처리방침
             </Link>
