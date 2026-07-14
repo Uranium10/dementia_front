@@ -24,6 +24,8 @@ export default function PromptPage() {
     checkAuth();
   }, [navigate]);
 
+  const inputRef = useRef(null);
+
   // 입력창의 텍스트 상태를 관리합니다.
   const [inputText, setInputText] = useState('');
 
@@ -43,6 +45,8 @@ export default function PromptPage() {
 
   // 새로운 메시지가 추가될 때마다 스크롤을 맨 아래로 내리기 위한 참조 객체입니다.
   const messagesEndRef = useRef(null);
+
+
 
   // messages 상태가 변경될 때마다(즉, 새 메시지가 추가될 때마다) 실행됩니다.
   useEffect(() => {
@@ -64,7 +68,7 @@ export default function PromptPage() {
     const tempAiMsgId = Date.now() + 1;
     try {
       setIsTyping(true);
-      setMessages(prev => [...prev, { id: tempAiMsgId, sender: 'ai', text: '답변을 생성하고 있습니다...', options: [], sources: [] }]);
+      setMessages(prev => [...prev, { id: tempAiMsgId, sender: 'ai', text: '답변 생성 중입니다...', options: [], sources: [] }]);
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 450000);
@@ -150,6 +154,13 @@ export default function PromptPage() {
   // 마지막 AI 메시지를 확인하여 입력창을 막을지 결정합니다.
   const lastAiMessage = [...messages].reverse().find(m => m.sender === 'ai');
   const isInputLocked = lastAiMessage?.allowFreeInput === false;
+
+  // isTyping 또는 isInputLocked 상태가 해제될 때마다 입력창에 다시 포커스
+  useEffect(() => {
+    if (!isTyping && !isInputLocked && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isTyping, isInputLocked]);
 
   return (
     // 전체 레이아웃
@@ -246,6 +257,8 @@ export default function PromptPage() {
       <footer className="bg-white border-t border-slate-200 p-4 sticky bottom-0">
         <form onSubmit={handleSend} className="max-w-3xl mx-auto relative flex items-center">
           <input
+            ref={inputRef}
+            autoFocus
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
@@ -265,7 +278,7 @@ export default function PromptPage() {
               : 'bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300'
               }`}
           >
-            {isTyping ? <Square className="w-4 h-4 fill-current" /> : <Send className="w-4 h-4 ml-1" />}
+            {isTyping ? <Square className="w-4 h-4 fill-current" /> : <Send className="w-4 h-4 ml-[-2px]" />}
           </button>
         </form>
       </footer>
