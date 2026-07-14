@@ -203,7 +203,7 @@ export default function PromptPage() {
                       <ul className="space-y-2">
                         {msg.sources.map((src, idx) => (
                           <li key={idx} className="bg-slate-50 p-3 rounded-lg text-sm border border-slate-100">
-                            {src.url ? (
+                            {src.url && src.url.startsWith('http') ? (
                               <a href={src.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-600 hover:underline">
                                 {src.title}
                               </a>
