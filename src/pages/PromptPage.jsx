@@ -210,7 +210,7 @@ export default function PromptPage() {
                   {/* Sources 렌더링 (AI 메시지이고 sources가 있을 때만) */}
                   {msg.sender === 'ai' && msg.sources && msg.sources.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-slate-200/60">
-                      <p className="text-xs font-bold text-slate-500 mb-2">참고 자료</p>
+                      <p className="text-xs font-bold text-slate-500 mb-2">출처</p>
                       <ul className="space-y-2">
                         {msg.sources.map((src, idx) => (
                           <li key={idx} className="bg-slate-50 p-3 rounded-lg text-sm border border-slate-100">
