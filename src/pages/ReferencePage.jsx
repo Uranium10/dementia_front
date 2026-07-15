@@ -31,20 +31,6 @@ export default function ReferencePage() {
       org: "법제처",
       icon: <BookOpen className="w-6 h-6 text-amber-500" />
     },
-    {
-      title: "서울아산병원 질환백과",
-      desc: "치매의 발생 원인, 주요 증상, 진단 및 검사, 치료 방법에 대한 상세 의학 정보입니다.",
-      url: "https://www.amc.seoul.kr/asan/healthinfo/disease/diseaseDetail.do?contentId=31575",
-      org: "서울아산병원",
-      icon: <HeartPulse className="w-6 h-6 text-teal-500" />
-    },
-    {
-      title: "분당서울대병원 건강정보",
-      desc: "치매의 초기 증상 파악과 스스로 점검해볼 수 있는 자가진단표 등 상세 건강 정보입니다.",
-      url: "https://www.snubh.org/service/info/com/view.do?BNO=452&Board_ID=B004&RNUM=2",
-      org: "분당서울대학교병원",
-      icon: <BookOpen className="w-6 h-6 text-rose-500" />
-    }
   ];
 
   return (
@@ -55,7 +41,7 @@ export default function ReferencePage() {
           <h2 className="text-sm font-bold text-blue-600 tracking-wider uppercase mb-3">Data Sources & References</h2>
           <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-800 mb-6 tracking-tight">데이터 출처 및 참고자료</h1>
           <p className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
-            본 서비스에서 활용된 치매 예방 가이드라인 및 관련 데이터의 <strong className="text-slate-700">공식 출처</strong>입니다.<br/>
+            본 서비스에서 활용된 치매 예방 가이드라인 및 관련 데이터의 <strong className="text-slate-700">공식 출처</strong>입니다.<br />
             신뢰할 수 있는 국가 기관과 대형 병원의 검증된 자료만을 바탕으로 합니다.
           </p>
         </div>
@@ -63,16 +49,16 @@ export default function ReferencePage() {
         {/* 카드 그리드 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {references.map((ref, idx) => (
-            <a 
-              key={idx} 
-              href={ref.url} 
-              target="_blank" 
+            <a
+              key={idx}
+              href={ref.url}
+              target="_blank"
               rel="noopener noreferrer"
               className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full relative overflow-hidden"
             >
               {/* 장식용 그라데이션 백그라운드 */}
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              
+
               <div className="flex items-center gap-4 mb-6">
                 <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl group-hover:bg-blue-50 group-hover:border-blue-100 transition-colors duration-300">
                   {ref.icon}
@@ -82,11 +68,11 @@ export default function ReferencePage() {
                   <h3 className="text-lg font-bold text-slate-800 mt-0.5 line-clamp-1">{ref.title}</h3>
                 </div>
               </div>
-              
+
               <p className="text-slate-500 text-sm leading-relaxed flex-grow">
                 {ref.desc}
               </p>
-              
+
               <div className="mt-8 flex items-center justify-between pt-4 border-t border-slate-100">
                 <span className="text-sm font-bold text-slate-400 group-hover:text-blue-600 transition-colors flex items-center">
                   원문 확인하기
@@ -107,7 +93,7 @@ export default function ReferencePage() {
           <div>
             <h4 className="font-bold text-slate-800 mb-2">서비스 이용 안내 (면책 조항)</h4>
             <p className="text-slate-500 text-sm leading-relaxed">
-              본 서비스는 사용자에게 편리한 정보를 제공할 목적으로 제작된 참고용 서비스이며, 어떠한 경우에도 <strong>전문의의 의학적 진단을 대신할 수 없습니다.</strong> 
+              본 서비스는 사용자에게 편리한 정보를 제공할 목적으로 제작된 참고용 서비스이며, 어떠한 경우에도 <strong>전문의의 의학적 진단을 대신할 수 없습니다.</strong>
               자가진단 결과나 제공된 정보만을 바탕으로 임의의 의학적 결정을 내리지 마시고, 정확한 진단과 치료를 위해서는 반드시 가까운 치매안심센터나 전문 의료기관을 방문하시기 바랍니다.
             </p>
           </div>
