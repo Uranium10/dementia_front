@@ -18,19 +18,40 @@ export default function ReferencePage() {
       icon: <FileText className="w-6 h-6 text-indigo-500" />
     },
     {
-      title: "국가건강정보포털 - 치매",
-      desc: "질병관리청에서 제공하는 치매에 대한 전반적인 건강 정보 및 올바른 관리 방안입니다.",
-      url: "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=6261",
-      org: "질병관리청",
-      icon: <ShieldAlert className="w-6 h-6 text-green-500" />
-    },
-    {
       title: "찾기쉬운 생활법령 정보",
       desc: "치매 환자와 그 가족들이 실생활에서 참고할 수 있는 법률적 지원 및 제도 안내입니다.",
       url: "https://www.easylaw.go.kr/CSP/OnhunqueansInfoRetrieve.laf?onhunqnaAstSeq=97&onhunqueSeq=4461",
       org: "법제처",
       icon: <BookOpen className="w-6 h-6 text-amber-500" />
     },
+    {
+      title: "국가정신건강정보포털 - 치매",
+      desc: "치매의 원인, 증상, 진단, 치료 및 예방법, 돌봄 방법 등에 대한 전반적인 정보를 제공합니다.",
+      url: "https://www.mentalhealth.go.kr/portal/disease/diseaseDetail.do?dissId=22",
+      org: "국가정신건강정보포털",
+      icon: <HeartPulse className="w-6 h-6 text-rose-500" />
+    },
+    {
+      title: "중앙치매센터 치매사전",
+      desc: "치매와 관련된 전문 용어와 의학적 지식을 알기 쉽게 설명해 주는 공식 백과사전입니다.",
+      url: "https://www.nid.or.kr/info/diction_list5.aspx?gubun=0506",
+      org: "중앙치매센터",
+      icon: <BookOpen className="w-6 h-6 text-teal-500" />
+    },
+    {
+      title: "치매 바로 알기",
+      desc: "파주시보건소에서 안내하는 치매 원인, 증상 및 단계별 특징에 대한 지역 보건 정보입니다.",
+      url: "https://clinic.paju.go.kr/clinic/clinic_03/clinic_03_14/clinic_03_14_02.jsp",
+      org: "파주시보건소",
+      icon: <ShieldAlert className="w-6 h-6 text-emerald-500" />
+    },
+    {
+      title: "국가건강정보포털 - 치매",
+      desc: "질병관리청에서 제공하는 치매에 대한 전반적인 건강 정보 및 올바른 관리 방안입니다.",
+      url: "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=6261",
+      org: "질병관리청",
+      icon: <ShieldAlert className="w-6 h-6 text-green-500" />
+    }
   ];
 
   return (
