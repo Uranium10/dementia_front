@@ -24,6 +24,8 @@ export default function PromptPage() {
     checkAuth();
   }, [navigate]);
 
+  const inputRef = useRef(null);
+
   // 입력창의 텍스트 상태를 관리합니다.
   const [inputText, setInputText] = useState('');
 
@@ -43,6 +45,8 @@ export default function PromptPage() {
 
   // 새로운 메시지가 추가될 때마다 스크롤을 맨 아래로 내리기 위한 참조 객체입니다.
   const messagesEndRef = useRef(null);
+
+
 
   // messages 상태가 변경될 때마다(즉, 새 메시지가 추가될 때마다) 실행됩니다.
   useEffect(() => {
@@ -64,7 +68,7 @@ export default function PromptPage() {
     const tempAiMsgId = Date.now() + 1;
     try {
       setIsTyping(true);
-      setMessages(prev => [...prev, { id: tempAiMsgId, sender: 'ai', text: '답변을 생성하고 있습니다...', options: [], sources: [] }]);
+      setMessages(prev => [...prev, { id: tempAiMsgId, sender: 'ai', text: '답변 생성 중입니다...', options: [], sources: [] }]);
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 450000);
@@ -154,6 +158,13 @@ export default function PromptPage() {
   const lastAiMessage = [...messages].reverse().find(m => m.sender === 'ai');
   const isInputLocked = lastAiMessage?.allowFreeInput === false;
 
+  // isTyping 또는 isInputLocked 상태가 해제될 때마다 입력창에 다시 포커스
+  useEffect(() => {
+    if (!isTyping && !isInputLocked && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isTyping, isInputLocked]);
+
   return (
     // 전체 레이아웃
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
@@ -202,11 +213,11 @@ export default function PromptPage() {
                   {/* Sources 렌더링 (AI 메시지이고 sources가 있을 때만) */}
                   {msg.sender === 'ai' && msg.sources && msg.sources.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-slate-200/60">
-                      <p className="text-xs font-bold text-slate-500 mb-2">참고 자료</p>
+                      <p className="text-xs font-bold text-slate-500 mb-2">출처</p>
                       <ul className="space-y-2">
                         {msg.sources.map((src, idx) => (
                           <li key={idx} className="bg-slate-50 p-3 rounded-lg text-sm border border-slate-100">
-                            {src.url ? (
+                            {src.url && src.url.startsWith('http') ? (
                               <a href={src.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-600 hover:underline">
                                 {src.title}
                               </a>
@@ -249,6 +260,8 @@ export default function PromptPage() {
       <footer className="bg-white border-t border-slate-200 p-4 sticky bottom-0">
         <form onSubmit={handleSend} className="max-w-3xl mx-auto relative flex items-center">
           <input
+            ref={inputRef}
+            autoFocus
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
@@ -268,7 +281,7 @@ export default function PromptPage() {
               : 'bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300'
               }`}
           >
-            {isTyping ? <Square className="w-4 h-4 fill-current" /> : <Send className="w-4 h-4 ml-1" />}
+            {isTyping ? <Square className="w-4 h-4 fill-current" /> : <Send className="w-4 h-4 ml-[-2px]" />}
           </button>
         </form>
       </footer>

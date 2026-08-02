@@ -4,6 +4,7 @@ import LandingPage from './pages/LandingPage';
 import PromptPage from './pages/PromptPage';
 import GuidePage from './pages/GuidePage';
 import PrivacyPage from './pages/PrivacyPage';
+import ReferencePage from './pages/ReferencePage';
 import './App.css';
 
 /**
@@ -28,6 +29,7 @@ function App() {
         <Route path="/prompt" element={<PromptPage />} />
         <Route path="/guide" element={<GuidePage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/reference" element={<ReferencePage />} />
       </Routes>
     </>
   );
