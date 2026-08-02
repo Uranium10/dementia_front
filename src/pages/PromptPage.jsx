@@ -79,8 +79,11 @@ export default function PromptPage() {
       try {
         response = await fetch(`${CHATBOT_SERVER}/api/chat`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: userId, user_name: userName, messages: messageHistory }),
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ messages: messageHistory }),
           signal: controller.signal
         });
       } finally {

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Brain, HeartPulse, Activity, Lock, ArrowRight, ShieldCheck, FileText, Stethoscope, ClipboardList } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
+import LoginModal from '../components/LoginModal';
 
 /**
  * LandingPage 컴포넌트
@@ -10,6 +11,19 @@ import { supabase } from '../lib/supabaseClient';
  */
 export default function LandingPage() {
   const navigate = useNavigate();
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        setIsLoginModalOpen(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleConsultClick = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -17,15 +31,7 @@ export default function LandingPage() {
     if (session) {
       navigate('/prompt');
     } else {
-      await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin,
-          queryParams: {
-            prompt: 'select_account',
-          },
-        },
-      });
+      setIsLoginModalOpen(true);
     }
   };
 
@@ -144,6 +150,8 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+      
+      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
     </div>
   );
 }

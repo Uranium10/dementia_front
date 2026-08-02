@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { User, LogOut, RefreshCcw } from 'lucide-react';
+import LoginModal from './LoginModal';
 
 export default function AuthButton() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -23,6 +25,9 @@ export default function AuthButton() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setLoading(false);
+      if (session) {
+        setIsLoginModalOpen(false); // 로그인 성공 시 모달 자동 닫기
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -39,16 +44,8 @@ export default function AuthButton() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSignIn = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin,
-        queryParams: {
-          prompt: 'select_account',
-        },
-      },
-    });
+  const handleSignIn = () => {
+    setIsLoginModalOpen(true);
   };
 
   const handleSignOut = async () => {
@@ -62,18 +59,21 @@ export default function AuthButton() {
 
   if (!session) {
     return (
-      <button
-        onClick={handleSignIn}
-        className="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm"
-      >
-        로그인
-      </button>
+      <>
+        <button
+          onClick={handleSignIn}
+          className="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm"
+        >
+          로그인
+        </button>
+        <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+      </>
     );
   }
 
   const user = session?.user;
   const metadata = user?.user_metadata || {};
-  const fullName = metadata?.full_name || metadata?.name || '사용자';
+  const fullName = metadata?.full_name || metadata?.name || user?.email?.split('@')[0] || '사용자';
   const avatarUrl = metadata?.avatar_url || metadata?.picture;
 
   return (
@@ -85,11 +85,11 @@ export default function AuthButton() {
         {avatarUrl ? (
           <img src={avatarUrl} alt="profile" className="w-7 h-7 rounded-full object-cover" referrerPolicy="no-referrer" />
         ) : (
-          <div className="w-7 h-7 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-xs">
+          <div className="w-7 h-7 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-xs uppercase">
             {fullName.charAt(0)}
           </div>
         )}
-        <span className="text-sm font-bold">{fullName}님</span>
+        <span className="text-sm font-bold truncate max-w-[100px]">{fullName}님</span>
       </button>
 
       {menuOpen && (
@@ -117,6 +117,7 @@ export default function AuthButton() {
           </div>
         </div>
       )}
+      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
     </div>
   );
 }
