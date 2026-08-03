@@ -3,6 +3,7 @@ import Header from './components/Header';
 import LandingPage from './pages/LandingPage';
 import PromptPage from './pages/PromptPage';
 import PreventionPage from './pages/PreventionPage';
+import PostListPage from './pages/PostListPage';
 import PostDetailPage from './pages/PostDetailPage';
 import GuidePage from './pages/GuidePage';
 import PrivacyPage from './pages/PrivacyPage';
@@ -29,6 +30,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/prevention" element={<PreventionPage />} />
+        <Route path="/posts" element={<PostListPage />} />
         <Route path="/post/:id" element={<PostDetailPage />} />
         <Route path="/prompt" element={<PromptPage />} />
         <Route path="/guide" element={<GuidePage />} />
