@@ -96,40 +96,35 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* --- 오른쪽 패널: 예방 가이드 (Disabled / 준비 중) --- */}
+            {/* --- 오른쪽 패널: 예방 가이드 --- */}
             {/* -ml-[150px]: 왼쪽의 사선 모양(slant-left)에 맞물리도록 왼쪽 마진을 당겨 빈틈을 없앱니다. */}
-            <div className="relative flex-1 min-w-0 bg-slate-50 slant-right transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] -ml-[150px] z-0 group grayscale-[0.85] hover:grayscale-[0.6] hover:flex-[1.2] opacity-90 cursor-not-allowed">
-
-              {/* 비활성화 상태를 시각적으로 강조하는 오버레이 (Hover 시 나타남) */}
-              <div className="absolute inset-0 bg-slate-200/50 backdrop-blur-[2px] z-20 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                <span className="bg-slate-800 text-white px-8 py-3.5 rounded-full font-bold shadow-2xl flex items-center gap-2.5 text-sm ring-4 ring-slate-800/20">
-                  <Lock className="w-4.5 h-4.5" />
-                  다음 단계(예방 프로젝트)에서 오픈됩니다
-                </span>
-              </div>
+            <div 
+              onClick={() => navigate('/prevention')}
+              className="relative flex-1 min-w-0 bg-slate-50 slant-right transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] -ml-[150px] z-0 group hover:bg-slate-100 hover:flex-[1.2] cursor-pointer"
+            >
 
               {/* 시각적 오프셋(-ml-150px)을 상쇄하기 위해 내용물을 오른쪽(pl-150px)으로 밀어 완벽한 대칭 중앙을 맞춥니다. */}
-              <div className="w-full h-full flex flex-col items-center justify-center pr-[34px] pl-[65px] sm:pl-[140px] pt-24 pb-6 transition-transform duration-700 group-hover:scale-[0.98] opacity-60">
+              <div className="w-full h-full flex flex-col items-center justify-center pr-[34px] pl-[65px] sm:pl-[140px] pt-24 pb-6 transition-transform duration-700 group-hover:scale-[0.98]">
 
                 {/* 미감 개선: 오른쪽 역시 SVG 아이콘 기반의 모던한 컴포지션으로 대체 */}
-                <div className="relative bg-white p-10 rounded-full border border-slate-200 mb-10 shadow-md flex items-center justify-center w-48 h-48">
-                  <Brain className="w-24 h-24 text-slate-400 drop-shadow-sm relative z-10" />
-                  <HeartPulse className="w-12 h-12 text-slate-300 absolute top-8 right-8" />
+                <div className="relative bg-white p-10 rounded-full border border-slate-200 mb-10 shadow-md flex items-center justify-center w-48 h-48 group-hover:shadow-lg transition-shadow">
+                  <Brain className="w-24 h-24 text-blue-400 drop-shadow-sm relative z-10 transition-colors group-hover:text-blue-500" />
+                  <HeartPulse className="w-12 h-12 text-pink-300 absolute top-8 right-8 transition-colors group-hover:text-pink-400" />
                 </div>
 
-                <h3 className="text-4xl font-extrabold text-slate-500 tracking-tight text-center">
+                <h3 className="text-4xl font-extrabold text-slate-700 tracking-tight text-center transition-colors group-hover:text-slate-800">
                   인지 능력 예방 가이드
                 </h3>
                 {/* 세부 설명은 항상 보이되, 호버 전에는 맞닿는 왼쪽 경계면만 블러 처리됩니다. */}
                 <div className="w-full mt-6 overflow-hidden [mask-image:linear-gradient(to_left,black_85%,transparent)] group-hover:[mask-image:none] transition-all">
-                  <p className="text-slate-400 font-medium text-center text-lg whitespace-nowrap opacity-80 leading-relaxed transition-opacity duration-500 group-hover:opacity-100">
+                  <p className="text-slate-500 font-medium text-center text-lg whitespace-nowrap leading-relaxed transition-opacity duration-500">
                     치매 예방을 위한 신체 운동, 두뇌 학습 가이드 및<br /> 생활 습관 개선 프로그램을 제공합니다.
                   </p>
                 </div>
 
-                {/* 세로 정렬(높이)을 왼쪽 패널과 완벽하게 맞추기 위한 투명(Invisible) 버튼 스페이서 */}
-                <div className="mt-10 flex items-center gap-2 px-8 py-3.5 invisible" aria-hidden="true">
-                  높이 맞춤용 텍스트 <ArrowRight className="w-5 h-5" />
+                {/* 호버 시(마우스를 올렸을 때) 아래에서 부드럽게 나타나는 액션 버튼 */}
+                <div className="mt-10 flex items-center gap-2 text-blue-700 font-bold bg-white px-8 py-3.5 rounded-full opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-100 shadow-xl hover:bg-blue-50">
+                  가이드 보기 <ArrowRight className="w-5 h-5" />
                 </div>
               </div>
 
