@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, Clock, Gamepad2, BrainCircuit, Puzzle, ArrowRight, Lightbulb } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 
@@ -13,6 +13,7 @@ const GAMES = [
 ];
 
 export default function PreventionPage() {
+  const navigate = useNavigate();
   const [featuredPosts, setFeaturedPosts] = useState([]);
   const [latestPosts, setLatestPosts] = useState([]);
   const [currentFeaturedIndex, setCurrentFeaturedIndex] = useState(0);
@@ -67,7 +68,10 @@ export default function PreventionPage() {
           </div>
           
           {currentFeatured ? (
-            <div className="bg-white rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-8 items-center relative overflow-hidden group cursor-pointer transition-all hover:shadow-md">
+            <div 
+              onClick={() => navigate(`/post/${currentFeatured.id}`)}
+              className="bg-white rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-8 items-center relative overflow-hidden group cursor-pointer transition-all hover:shadow-md"
+            >
               <div className="w-full md:w-1/2 aspect-video rounded-2xl overflow-hidden shrink-0">
                 <img 
                   src={currentFeatured.thumbnail_url || 'https://via.placeholder.com/600x400'} 
@@ -142,7 +146,11 @@ export default function PreventionPage() {
 
           <div className="space-y-4">
             {latestPosts.length > 0 ? latestPosts.map(post => (
-              <div key={post.id} className="flex gap-4 items-center group cursor-pointer border-b border-slate-100 pb-4 last:border-0 last:pb-0">
+              <div 
+                key={post.id} 
+                onClick={() => navigate(`/post/${post.id}`)}
+                className="flex gap-4 items-center group cursor-pointer border-b border-slate-100 pb-4 last:border-0 last:pb-0"
+              >
                 <div className="w-32 h-20 rounded-xl overflow-hidden shrink-0 bg-slate-100">
                   <img src={post.thumbnail_url} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                 </div>
