@@ -83,7 +83,7 @@ export default function PromptPage() {
       try {
         response = await fetch(`${CHATBOT_SERVER}/api/chat`, {
           method: 'POST',
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${session.access_token}`
           },

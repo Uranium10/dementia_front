@@ -2,6 +2,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import LandingPage from './pages/LandingPage';
 import PromptPage from './pages/PromptPage';
+import PreventionPage from './pages/PreventionPage';
 import GuidePage from './pages/GuidePage';
 import PrivacyPage from './pages/PrivacyPage';
 import ReferencePage from './pages/ReferencePage';
@@ -26,6 +27,7 @@ function App() {
       {/* 페이지 라우팅 영역 */}
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/prevention" element={<PreventionPage />} />
         <Route path="/prompt" element={<PromptPage />} />
         <Route path="/guide" element={<GuidePage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
