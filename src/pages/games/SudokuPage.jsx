@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getSudoku } from 'sudoku-gen';
-import { ArrowLeft, Clock, Trophy, Loader2, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Clock, Trophy, Loader2, RefreshCw, Eraser, Brain } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 
 export default function SudokuPage() {
@@ -11,7 +11,7 @@ export default function SudokuPage() {
   const [original, setOriginal] = useState(null);
   const [solution, setSolution] = useState(null);
   const [selectedCell, setSelectedCell] = useState(null); // {r, c}
-  const [difficulty, setDifficulty] = useState('easy');
+  const [difficulty, setDifficulty] = useState('medium');
   const [elapsed, setElapsed] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const timerRef = useRef(null);
@@ -117,64 +117,79 @@ export default function SudokuPage() {
     return `${m}:${s}`;
   };
 
-  // 파스텔 박스 색상 (9개의 3x3 영역에 각각 다른 파스텔 톤 적용)
+  // 9개 구역(3x3)별 파스텔 배경색 (sudoku.png 참조)
   const getBoxColor = (r, c) => {
     const boxIdx = Math.floor(r / 3) * 3 + Math.floor(c / 3);
     const colors = [
-      'bg-[#FFE5EC]', // light pink
-      'bg-[#FFF2CC]', // light yellow
-      'bg-[#E5F9E0]', // light green
-      'bg-[#E2F0CB]', // pale green
-      'bg-[#F0E6FF]', // light purple
-      'bg-[#E5F2FF]', // light blue
-      'bg-[#FFE5B4]', // peach
-      'bg-[#D5E8D4]', // mint
-      'bg-[#F8CECC]', // rose
+      'bg-[#FADAE5]', // 0: Pink
+      'bg-[#FFE8EC]', // 1: Lighter Pink
+      'bg-[#D6EAF8]', // 2: Light Blue
+      'bg-[#D6EAF8]', // 3: Light Blue
+      'bg-[#E8F8F5]', // 4: Mint
+      'bg-[#D5F5E3]', // 5: Light Green
+      'bg-[#D1F2EB]', // 6: Mint
+      'bg-[#FDEBD0]', // 7: Peach
+      'bg-[#FAD7A1]', // 8: Orange
     ];
     return colors[boxIdx];
   };
 
+  // 1~9 키패드 색상 (sudoku.png 참조)
+  const padColors = [
+    'bg-[#F5B7B1]', // 1
+    'bg-[#F5CBA7]', // 2
+    'bg-[#F9E79F]', // 3
+    'bg-[#A3E4D7]', // 4
+    'bg-[#AED6F1]', // 5
+    'bg-[#FADBD8]', // 6
+    'bg-[#ABEBC6]', // 7
+    'bg-[#A9CCE3]', // 8
+    'bg-[#F1948A]', // 9
+  ];
+
   return (
-    <div className="min-h-screen bg-[#FAFAF8] pb-20 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#FDFCF4] pb-20 flex flex-col font-sans">
       {/* Header */}
-      <header className="bg-white px-4 py-4 sticky top-0 z-40 flex items-center justify-between shadow-sm">
-        <div className="flex items-center">
-          <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors">
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-          <h1 className="text-xl font-black text-[#5B637A] ml-2 tracking-tight">스도쿠</h1>
-        </div>
+      <header className="bg-transparent px-4 py-4 flex items-center justify-between">
+        <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors">
+          <ArrowLeft className="w-6 h-6" />
+        </button>
         {gameState === 'playing' && (
-          <div className="flex items-center gap-2 bg-[#F3F4F6] px-4 py-2 rounded-full shadow-inner">
-            <Clock className="w-4 h-4 text-[#9CA3AF]" />
-            <span className="text-sm font-bold text-[#4B5563] font-mono tracking-wider">{formatTime(elapsed)}</span>
-          </div>
+          <button 
+            onClick={() => setGameState('intro')} 
+            className="text-[#66B2B2] font-bold flex items-center gap-1 text-sm hover:opacity-70"
+          >
+            <RefreshCw className="w-4 h-4" /> 난이도 변경
+          </button>
         )}
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-start p-4 max-w-md mx-auto w-full pt-8">
+      <main className="flex-1 flex flex-col items-center justify-start p-4 max-w-md mx-auto w-full pt-2">
         
         {/* Intro Screen */}
         {gameState === 'intro' && (
-          <div className="w-full flex flex-col items-center justify-center animate-in fade-in zoom-in duration-500 mt-4">
-            <div className="w-56 h-56 mb-8 rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-white bg-white">
+          <div className="w-full flex flex-col items-center justify-center animate-in fade-in duration-500 mt-4">
+            <div className="w-56 h-56 mb-8 rounded-[2rem] overflow-hidden shadow-xl border-4 border-white bg-white">
               <img src="/assets/games/sudoku.png" alt="Sudoku Logo" className="w-full h-full object-cover" />
             </div>
             
-            <h2 className="text-3xl font-black text-[#5B637A] mb-3">스도쿠 퍼즐</h2>
-            <p className="text-[#8993A4] text-sm mb-12 text-center px-4 font-medium leading-relaxed">
-              화사한 색감과 함께 두뇌를 깨워보세요.<br/>난이도를 선택하면 바로 시작됩니다.
+            <h2 className="text-2xl font-black text-[#2C3E50] mb-2 uppercase tracking-wide flex items-center gap-2">
+              <Brain className="w-6 h-6 text-[#F1948A]" />
+              두뇌 건강 스도쿠
+            </h2>
+            <p className="text-[#7F8C8D] text-sm mb-12 text-center px-4 font-medium">
+              논리력 향상을 위한 두뇌 훈련 게임입니다.<br/>원하시는 난이도를 선택해 시작하세요.
             </p>
             
-            <div className="flex flex-col gap-4 w-full px-4">
-              <button onClick={() => initGame('easy')} className="w-full bg-[#E5F9E0] hover:bg-[#D5E8D4] text-[#4A7C59] font-black text-lg py-5 rounded-[1.5rem] shadow-sm transition-transform active:scale-95">
-                쉬움 (입문자용)
+            <div className="flex flex-col gap-4 w-full px-8">
+              <button onClick={() => initGame('easy')} className="w-full bg-[#D1F2EB] hover:bg-[#A3E4D7] text-[#117864] font-black text-lg py-4 rounded-full shadow-sm transition-transform active:scale-95 border-2 border-white">
+                쉬움
               </button>
-              <button onClick={() => initGame('medium')} className="w-full bg-[#FFF2CC] hover:bg-[#FFE699] text-[#B38F00] font-black text-lg py-5 rounded-[1.5rem] shadow-sm transition-transform active:scale-95">
-                보통 (일반용)
+              <button onClick={() => initGame('medium')} className="w-full bg-[#FDEBD0] hover:bg-[#F5CBA7] text-[#D35400] font-black text-lg py-4 rounded-full shadow-sm transition-transform active:scale-95 border-2 border-white">
+                보통
               </button>
-              <button onClick={() => initGame('hard')} className="w-full bg-[#FFE5EC] hover:bg-[#FFCCD5] text-[#C9184A] font-black text-lg py-5 rounded-[1.5rem] shadow-sm transition-transform active:scale-95">
-                어려움 (숙련자용)
+              <button onClick={() => initGame('hard')} className="w-full bg-[#FADAE5] hover:bg-[#F5B7B1] text-[#900C3F] font-black text-lg py-4 rounded-full shadow-sm transition-transform active:scale-95 border-2 border-white">
+                어려움
               </button>
             </div>
           </div>
@@ -183,25 +198,24 @@ export default function SudokuPage() {
         {/* Playing Screen */}
         {gameState === 'playing' && (
           <div className="w-full animate-in fade-in duration-500 flex flex-col items-center">
-            {/* 난이도 표시 및 리셋 */}
-            <div className="w-full flex justify-between items-center mb-6 px-2">
-              <span className={`px-5 py-2 rounded-2xl text-xs font-black shadow-sm tracking-wide ${
-                difficulty === 'easy' ? 'bg-[#E5F9E0] text-[#4A7C59]' : 
-                difficulty === 'medium' ? 'bg-[#FFF2CC] text-[#B38F00]' : 'bg-[#FFE5EC] text-[#C9184A]'
-              }`}>
-                {difficulty === 'easy' ? '쉬움' : difficulty === 'medium' ? '보통' : '어려움'} 모드
-              </span>
-              <button 
-                onClick={() => initGame(difficulty)} 
-                className="p-2 flex items-center gap-1.5 text-[#8993A4] hover:text-[#5B637A] hover:bg-[#F3F4F6] rounded-xl transition-colors text-xs font-bold"
-              >
-                <RefreshCw className="w-4 h-4" /> 다시 시작
-              </button>
+            
+            {/* Title & Info Bar */}
+            <div className="w-full flex flex-col items-center mb-6">
+              <h2 className="text-2xl font-black text-[#2C3E50] uppercase tracking-wide flex items-center gap-2 mb-2">
+                <Brain className="w-6 h-6 text-[#F1948A]" />
+                두뇌 건강: 스도쿠
+              </h2>
+              <div className="w-full flex justify-between items-center px-2 text-[#5D6D7E] text-sm font-semibold">
+                <span className="capitalize">Level: {difficulty === 'easy' ? '쉬움' : difficulty === 'medium' ? '보통' : '어려움'}</span>
+                <span className="flex items-center gap-1 font-mono">
+                  <Clock className="w-4 h-4" /> {formatTime(elapsed)}
+                </span>
+              </div>
             </div>
 
-            {/* 스도쿠 보드 (Flat Vector Pastel 스타일) */}
-            <div className="w-full bg-white p-3 rounded-[2rem] shadow-xl border-4 border-white mb-8">
-              <div className="aspect-square w-full grid grid-cols-9 grid-rows-9 gap-1 bg-[#F3F4F6] p-1 rounded-3xl overflow-hidden">
+            {/* 스도쿠 보드 (sudoku.png 완벽 재현) */}
+            <div className="w-full rounded-[1.5rem] overflow-hidden border-4 border-[#66B2B2] shadow-sm mb-8 bg-[#66B2B2]">
+              <div className="w-full aspect-square grid grid-cols-9 grid-rows-9 gap-0 bg-[#66B2B2]">
                 {board?.map((row, r) => 
                   row.map((cell, c) => {
                     const isSelected = selectedCell?.r === r && selectedCell?.c === c;
@@ -209,42 +223,45 @@ export default function SudokuPage() {
                     const isOriginal = original[r][c];
                     const isError = !isOriginal && cell !== '' && cell !== solution[r][c];
                     
-                    // 구역별 파스텔 배경
                     const baseBoxColor = getBoxColor(r, c);
 
-                    // 셀 스타일링
+                    // 굵은 3x3 보더 처리는 배경색(#66B2B2) 위에서 마진/보더로 처리
+                    // gap-0 상태에서 각 셀에 얇은 선을 주고, 3x3은 두껍게 줌
+                    const borderRight = c % 3 === 2 && c !== 8 ? 'border-r-2' : c !== 8 ? 'border-r-[1px]' : '';
+                    const borderBottom = r % 3 === 2 && r !== 8 ? 'border-b-2' : r !== 8 ? 'border-b-[1px]' : '';
+                    
+                    const borderClasses = `${borderRight} ${borderBottom} border-[#66B2B2]`;
+
+                    // 셀 배경 (선택 시 튀어나온 노란색 효과)
                     let bgClass = baseBoxColor; 
-                    let shadowClass = '';
-                    let scaleClass = 'scale-100';
+                    let innerClass = "w-full h-full flex items-center justify-center transition-colors duration-100";
 
                     if (isSelected) {
-                      bgClass = 'bg-[#5B637A]';
-                      shadowClass = 'shadow-md z-10';
-                      scaleClass = 'scale-110';
+                      innerClass += ' bg-[#FDE08B] shadow-[inset_0px_0px_0px_2px_#E3B63A] rounded-md scale-95';
                     } else if (isSameValue) {
-                      bgClass = 'bg-white';
-                      shadowClass = 'shadow-sm z-0 ring-2 ring-[#5B637A]/20';
+                      innerClass += ' bg-white/40';
                     }
 
                     // 텍스트 색상
-                    let textClass = 'text-[#5B637A]'; // 기본 색상 (부드러운 다크 그레이)
-                    if (isSelected) {
-                      textClass = 'text-white';
-                    } else if (!isOriginal) {
-                      textClass = isError ? 'text-[#FF4D4D] font-black' : 'text-[#4A90E2] font-black'; // 사용자가 입력한 값은 파란색/빨간색
+                    let textClass = 'text-[#2C3E50]'; 
+                    if (!isOriginal) {
+                      textClass = isError ? 'text-[#E74C3C]' : 'text-[#AF7AC5]'; // 사용자가 쓴 글씨는 연보라/빨강
                     }
+                    if (isSelected) textClass = 'text-[#B77B00]';
 
                     return (
                       <div
                         key={`${r}-${c}`}
                         onClick={() => setSelectedCell({r, c})}
-                        className={`flex items-center justify-center cursor-pointer select-none transition-all duration-200 rounded-lg
-                          ${bgClass} ${shadowClass} ${scaleClass}
-                        `}
+                        className={`bg-white ${borderClasses}`}
                       >
-                        <span className={`text-xl sm:text-2xl md:text-3xl ${isOriginal ? 'font-black' : 'font-black'} ${textClass} font-mono`}>
-                          {cell}
-                        </span>
+                        <div className={`${bgClass} w-full h-full p-[1px]`}>
+                          <div className={innerClass}>
+                            <span className={`text-xl sm:text-2xl md:text-[1.75rem] ${isOriginal ? 'font-medium' : 'font-medium'} ${textClass} font-sans`}>
+                              {cell}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     );
                   })
@@ -252,23 +269,38 @@ export default function SudokuPage() {
               </div>
             </div>
 
-            {/* 숫자 키패드 (둥글고 귀여운 버튼) */}
-            <div className="w-full grid grid-cols-5 gap-3 px-1">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+            {/* 원형 숫자 키패드 (sudoku.png 참조) */}
+            <div className="w-full flex flex-col gap-4 px-2 max-w-[320px]">
+              {/* 첫 번째 줄: 1 2 3 4 5 */}
+              <div className="flex justify-between w-full">
+                {[1, 2, 3, 4, 5].map(num => (
+                  <button
+                    key={num}
+                    onClick={() => handleInput(num)}
+                    className={`w-12 h-12 rounded-full flex items-center justify-center text-[#2C3E50] font-semibold text-xl shadow-sm transition-transform active:scale-90 ${padColors[num-1]}`}
+                  >
+                    {num}
+                  </button>
+                ))}
+              </div>
+              {/* 두 번째 줄: 6 7 8 9 + Erase */}
+              <div className="flex justify-between w-full">
+                {[6, 7, 8, 9].map(num => (
+                  <button
+                    key={num}
+                    onClick={() => handleInput(num)}
+                    className={`w-12 h-12 rounded-full flex items-center justify-center text-[#2C3E50] font-semibold text-xl shadow-sm transition-transform active:scale-90 ${padColors[num-1]}`}
+                  >
+                    {num}
+                  </button>
+                ))}
                 <button
-                  key={num}
-                  onClick={() => handleInput(num)}
-                  className="bg-white hover:bg-[#F3F4F6] text-[#5B637A] font-black text-2xl py-3 rounded-2xl shadow-sm transition-all active:scale-90"
+                  onClick={() => handleInput('')}
+                  className="w-12 h-12 rounded-full bg-white flex flex-col items-center justify-center text-[#2C3E50] font-semibold text-xs shadow-sm transition-transform active:scale-90 border border-slate-200"
                 >
-                  {num}
+                  <Eraser className="w-5 h-5 mb-0.5 text-slate-500" />
                 </button>
-              ))}
-              <button
-                onClick={() => handleInput('')}
-                className="bg-[#FFE5EC] hover:bg-[#FFCCD5] text-[#C9184A] font-black text-sm py-3 rounded-2xl shadow-sm transition-all active:scale-90 flex items-center justify-center"
-              >
-                지우기
-              </button>
+              </div>
             </div>
           </div>
         )}
@@ -276,41 +308,41 @@ export default function SudokuPage() {
 
       {/* 완료 모달 */}
       {gameState === 'finished' && (
-        <div className="fixed inset-0 bg-[#5B637A]/40 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-300">
-            <div className="w-24 h-24 bg-[#E5F9E0] rounded-[2rem] flex items-center justify-center mb-6 shadow-inner rotate-12">
-              <Trophy className="w-12 h-12 text-[#4A7C59] -rotate-12" />
+        <div className="fixed inset-0 bg-[#2C3E50]/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-300">
+            <div className="w-24 h-24 bg-[#D1F2EB] rounded-full flex items-center justify-center mb-6 shadow-inner">
+              <Trophy className="w-12 h-12 text-[#117864]" />
             </div>
-            <h2 className="text-3xl font-black text-[#5B637A] mb-2 tracking-tight">퍼즐 완성!</h2>
-            <p className="text-[#8993A4] mb-8 font-bold">정말 훌륭해요! 두뇌가 한결 맑아지셨을 거예요.</p>
+            <h2 className="text-3xl font-black text-[#2C3E50] mb-2 tracking-tight uppercase">Clear!</h2>
+            <p className="text-[#7F8C8D] mb-8 font-medium">대단해요! 두뇌가 한결 맑아지셨을 거예요.</p>
             
-            <div className="w-full bg-[#FAFAF8] rounded-3xl p-5 mb-8 flex justify-around shadow-inner border border-slate-100">
+            <div className="w-full bg-[#FDFCF4] border-2 border-[#E5E8E8] rounded-2xl p-5 mb-8 flex justify-around">
               <div className="text-center">
-                <p className="text-xs font-black text-[#8993A4] mb-1">난이도</p>
-                <p className="text-xl font-black text-[#5B637A]">{difficulty === 'easy' ? '쉬움' : difficulty === 'medium' ? '보통' : '어려움'}</p>
+                <p className="text-xs font-bold text-[#AAB7B8] mb-1">난이도</p>
+                <p className="text-lg font-black text-[#2C3E50] capitalize">{difficulty === 'easy' ? '쉬움' : difficulty === 'medium' ? '보통' : '어려움'}</p>
               </div>
-              <div className="w-0.5 bg-slate-200 rounded-full"></div>
+              <div className="w-0.5 bg-[#E5E8E8] rounded-full"></div>
               <div className="text-center">
-                <p className="text-xs font-black text-[#8993A4] mb-1">소요 시간</p>
-                <p className="text-xl font-black text-[#5B637A] font-mono">{formatTime(elapsed)}</p>
+                <p className="text-xs font-bold text-[#AAB7B8] mb-1">소요 시간</p>
+                <p className="text-lg font-black text-[#2C3E50] font-mono">{formatTime(elapsed)}</p>
               </div>
             </div>
 
             {isSaving ? (
-              <div className="flex items-center justify-center w-full bg-[#F3F4F6] text-[#8993A4] font-bold py-5 rounded-3xl">
-                <Loader2 className="w-5 h-5 animate-spin mr-2" /> 기록 저장 중...
+              <div className="flex items-center justify-center w-full bg-[#F2F4F4] text-[#7F8C8D] font-medium py-4 rounded-full">
+                <Loader2 className="w-5 h-5 animate-spin mr-2" /> 점수 기록 중...
               </div>
             ) : (
               <div className="w-full flex flex-col gap-3">
                 <button
                   onClick={() => setGameState('intro')}
-                  className="w-full bg-[#5B637A] hover:bg-[#4B5563] text-white font-black text-lg py-5 rounded-3xl shadow-lg transition-transform active:scale-95"
+                  className="w-full bg-[#66B2B2] hover:bg-[#529595] text-white font-black text-lg py-4 rounded-full shadow-md transition-transform active:scale-95"
                 >
                   한 판 더 하기
                 </button>
                 <button
                   onClick={() => navigate('/prevention')}
-                  className="w-full bg-white hover:bg-slate-50 text-[#8993A4] font-black text-lg py-5 rounded-3xl border-2 border-slate-100 transition-transform active:scale-95"
+                  className="w-full bg-white hover:bg-slate-50 text-[#7F8C8D] font-black text-lg py-4 rounded-full border-2 border-[#E5E8E8] transition-transform active:scale-95"
                 >
                   목록으로 돌아가기
                 </button>
