@@ -8,7 +8,7 @@ const CATEGORIES = ['전체', '식습관', '운동', '수면', '두뇌훈련', '
 const GAMES = [
   { 
     id: 1, 
-    title: '퍼즐 맞추기', 
+    title: '스도쿠', 
     desc: '스도쿠 퍼즐을 완성하며 논리력을 기르세요.', 
     image: '/assets/games/sudoku.png',
     path: '/game/sudoku'
