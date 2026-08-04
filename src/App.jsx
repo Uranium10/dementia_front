@@ -11,6 +11,7 @@ import ReferencePage from './pages/ReferencePage';
 import ProfilePage from './pages/ProfilePage';
 import SudokuPage from './pages/games/SudokuPage';
 import ColorMatchPage from './pages/games/ColorMatchPage';
+import SequencePage from './pages/games/SequencePage';
 import GameStatsPage from './pages/GameStatsPage';
 import './App.css';
 
@@ -42,6 +43,7 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/game/sudoku" element={<SudokuPage />} />
         <Route path="/game/color-match" element={<ColorMatchPage />} />
+        <Route path="/game/sequence" element={<SequencePage />} />
         <Route path="/game-stats" element={<GameStatsPage />} />
       </Routes>
     </>

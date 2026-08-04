@@ -38,6 +38,16 @@ const GAME_TYPES = [
     path: '/game/color-match',
     unit: '점'
   },
+  { 
+    id: 'sequence', 
+    name: '순서 기억하기', 
+    icon: 'Play', 
+    desc: '나타난 순서를 기억하고 맞춰 실행기능을 돕는 훈련', 
+    type: 'score', 
+    themeColor: '#a855f7', 
+    path: '/game/sequence',
+    unit: '단계'
+  },
 ];
 
 export default function GameStatsPage() {

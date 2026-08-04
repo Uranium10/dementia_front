@@ -19,6 +19,13 @@ const GAMES = [
     desc: '글자의 뜻을 찾아 주의력과 억제력을 기르세요.',
     image: '/assets/games/color_match.png',
     path: '/game/color-match'
+  },
+  {
+    id: 3,
+    title: '순서 기억하기',
+    desc: '나타난 순서를 기억하고 맞춰 실행기능을 돕는 훈련',
+    image: '/assets/games/sequence.png',
+    path: '/game/sequence'
   }
 ];
 
