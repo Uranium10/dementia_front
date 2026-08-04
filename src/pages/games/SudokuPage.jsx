@@ -392,6 +392,7 @@ export default function SudokuPage() {
             <p className="text-[#7F8C8D] mb-8 font-bold text-base">실수를 4번 하셨습니다.<br/>다시 도전해볼까요?</p>
             <div className="w-full flex flex-col gap-3">
               <button onClick={() => setGameState('intro')} className="w-full text-white font-black text-xl py-4 rounded-full bg-[#E74C3C] hover:bg-[#C0392B] shadow-md active:scale-95 transition-all">다시 시작</button>
+              <button onClick={() => navigate('/game-stats')} className="w-full bg-slate-100 text-[#34495E] font-black text-xl py-4 rounded-full border-2 border-slate-200 active:scale-95 transition-all hover:bg-slate-200">통계 확인하기</button>
               <button onClick={() => navigate('/prevention')} className="w-full bg-white text-[#7F8C8D] font-black text-xl py-4 rounded-full border-2 border-[#E5E8E8] active:scale-95 transition-all">목록으로</button>
             </div>
           </div>
@@ -425,6 +426,7 @@ export default function SudokuPage() {
             ) : (
               <div className="w-full flex flex-col gap-3">
                 <button onClick={() => setGameState('intro')} className="w-full text-white font-black text-xl py-4 rounded-full bg-[#66B2B2] hover:bg-[#529595] shadow-md active:scale-95 transition-all">한 판 더</button>
+                <button onClick={() => navigate('/game-stats')} className="w-full bg-slate-100 text-[#34495E] font-black text-xl py-4 rounded-full border-2 border-slate-200 active:scale-95 transition-all hover:bg-slate-200">통계 확인하기</button>
                 <button onClick={() => navigate('/prevention')} className="w-full bg-white text-[#7F8C8D] font-black text-xl py-4 rounded-full border-2 border-[#E5E8E8] active:scale-95 transition-all">목록으로</button>
               </div>
             )}

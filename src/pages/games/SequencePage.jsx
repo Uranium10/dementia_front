@@ -398,7 +398,7 @@ export default function SequencePage() {
                     <ChevronRight className="w-5 h-5" />
                   </button>
                   <button
-                    onClick={() => navigate('/stats')}
+                    onClick={() => navigate('/game-stats')}
                     className="w-full py-4 bg-white/10 text-white rounded-xl font-bold text-lg hover:bg-white/20 transition-all border border-white/10"
                   >
                     통계 확인하기
