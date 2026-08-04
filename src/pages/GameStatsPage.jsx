@@ -85,14 +85,20 @@ export default function GameStatsPage() {
     });
   }, []);
 
+  // 브라우저 로컬 타임존 기준 YYYY-MM-DD 문자열 반환 헬퍼
+  const getLocalDateString = (dateObj) => {
+    const tzOffset = dateObj.getTimezoneOffset() * 60000;
+    return new Date(dateObj.getTime() - tzOffset).toISOString().split('T')[0];
+  };
+
   const fetchAllGameStats = async (userId) => {
     setLoading(true);
     setError(null);
     try {
-      // 최근 30일 범위 날짜 계산
+      // 최근 30일 범위 날짜 계산 (로컬 타임존 기준)
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const dateString = thirtyDaysAgo.toISOString().split('T')[0];
+      const dateString = getLocalDateString(thirtyDaysAgo);
 
       // 한 번의 쿼리로 해당 유저의 30일간의 전체 게임 데이터 페칭
       const { data, error: fetchError } = await supabase
@@ -164,7 +170,12 @@ export default function GameStatsPage() {
     const isTimeType = currentGame.type === 'time';
 
     filteredScores.forEach(row => {
-      const date = row.play_date;
+      // 만약 DB의 play_date가 ISO 타임스탬프(UTC)로 온다면 로컬 시간으로 변환
+      let date = row.play_date;
+      if (date && date.includes('T')) {
+        date = getLocalDateString(new Date(date));
+      }
+
       if (isTimeType) {
         const duration = row.detail?.duration_sec;
         if (duration !== undefined && duration !== null) {
@@ -185,9 +196,20 @@ export default function GameStatsPage() {
     return Object.keys(dailyBest)
       .sort((a, b) => a.localeCompare(b))
       .map(date => {
-        const [yyyy, mm, dd] = date.split('-');
+        // date는 YYYY-MM-DD 형태
+        const parts = date.split('-');
+        let mm, dd;
+        if (parts.length === 3) {
+          mm = parts[1];
+          dd = parts[2];
+        } else {
+          // 혹시 모를 파싱 예외 처리
+          mm = date;
+          dd = '';
+        }
+        
         return {
-          date: `${mm}-${dd}`,
+          date: parts.length === 3 ? `${mm}-${dd}` : date,
           fullDate: date,
           value: dailyBest[date]
         };
