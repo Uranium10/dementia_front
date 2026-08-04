@@ -24,7 +24,7 @@ export default function ColorMatchPage() {
   const [difficulty, setDifficulty] = useState('normal');
   const [palette, setPalette] = useState(ALL_COLORS.slice(0, 5));
   
-  // 게임 진행 상태
+  // 상태 변수들
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [lives, setLives] = useState(3);
@@ -35,10 +35,29 @@ export default function ColorMatchPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0); 
 
+  // 최신 상태를 참조하기 위한 Ref들 (클로저 문제 방지)
+  const stateRef = useRef({
+    gameState: 'intro',
+    lives: 3,
+    timeLimit: 2400,
+    difficulty: 'normal',
+    currentWord: null,
+    isProcessing: false // 타이머 오버나 클릭이 중복 처리되지 않게 락
+  });
+
   const tickRef = useRef(null);
   const startTsRef = useRef(null);
   const totalPlayStartRef = useRef(null);
   const stageRef = useRef(null);
+
+  // stateRef 동기화
+  useEffect(() => {
+    stateRef.current.gameState = gameState;
+    stateRef.current.lives = lives;
+    stateRef.current.timeLimit = timeLimit;
+    stateRef.current.difficulty = difficulty;
+    stateRef.current.currentWord = currentWord;
+  }, [gameState, lives, timeLimit, difficulty, currentWord]);
 
   useEffect(() => {
     return () => {
@@ -46,27 +65,13 @@ export default function ColorMatchPage() {
     };
   }, []);
 
-  const startGame = (diffKey) => {
-    const d = DIFFICULTIES[diffKey];
-    const newPalette = ALL_COLORS.slice(0, d.colors);
-    setDifficulty(diffKey);
-    setPalette(newPalette);
-    setScore(0);
-    setStreak(0);
-    setLives(3);
-    setTimeLimit(d.start);
-    setGameState('playing');
-    totalPlayStartRef.current = Date.now();
-    startRound(d.start, newPalette);
-  };
-
-  const pickWord = useCallback((currentPalette) => {
+  const pickWord = (currentPalette) => {
     const meaning = currentPalette[Math.floor(Math.random() * currentPalette.length)];
     let ink;
     do { ink = currentPalette[Math.floor(Math.random() * currentPalette.length)]; }
     while (ink.name === meaning.name);
     return { meaning, ink };
-  }, []);
+  };
 
   const triggerAnimation = (type) => {
     if (stageRef.current) {
@@ -83,7 +88,7 @@ export default function ColorMatchPage() {
     }
   };
 
-  const saveScore = async (finalScore, finalElapsedTime) => {
+  const saveScore = async (finalScore, finalElapsedTime, diffKey) => {
     setIsSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -92,7 +97,7 @@ export default function ColorMatchPage() {
           user_id: user.id,
           game_type: 'color_match',
           score: finalScore,
-          detail: { duration_sec: finalElapsedTime, difficulty, completed: true }
+          detail: { duration_sec: finalElapsedTime, difficulty: diffKey, completed: true }
         });
       }
     } catch (err) {
@@ -107,43 +112,67 @@ export default function ColorMatchPage() {
     const finalElapsed = Math.floor((Date.now() - totalPlayStartRef.current) / 1000);
     setElapsedTime(finalElapsed);
     setGameState('gameover');
-    saveScore(score, finalElapsed);
+    
+    // 점수 저장 시 최신 state(score)가 클로저에 없을 수 있으므로 직접 전달받거나 현재 렌더된 값을 사용
+    // 여기서는 함수 실행 시점의 score를 저장
+    setScore(currentScore => {
+      saveScore(currentScore, finalElapsed, stateRef.current.difficulty);
+      return currentScore;
+    });
   };
 
   const processMistake = (isTimeout) => {
-    const newLives = lives - 1;
-    setLives(newLives);
-    setStreak(0);
+    if (stateRef.current.isProcessing || stateRef.current.gameState !== 'playing') return;
+    stateRef.current.isProcessing = true;
+    if (tickRef.current) cancelAnimationFrame(tickRef.current);
+
     triggerAnimation('wrong');
     
+    const cw = stateRef.current.currentWord;
     if (isTimeout) {
-      setFeedback({ text: `시간 초과! 정답은 '${currentWord.meaning?.name}'입니다.`, type: 'wrong' });
+      setFeedback({ text: `시간 초과! 정답은 '${cw?.meaning?.name}'입니다.`, type: 'wrong' });
     } else {
-      setFeedback({ text: `오답! 정답은 '${currentWord.meaning?.name}'입니다.`, type: 'wrong' });
+      setFeedback({ text: `오답! 정답은 '${cw?.meaning?.name}'입니다.`, type: 'wrong' });
     }
 
-    if (newLives <= 0) {
-      handleGameOver();
-    } else {
-      const d = DIFFICULTIES[difficulty];
-      const newTimeLimit = Math.min(timeLimit + d.inc, 4000);
-      setTimeLimit(newTimeLimit);
-      setTimeout(() => startRound(newTimeLimit), 800);
-    }
+    setStreak(0);
+    setLives(prevLives => {
+      const newLives = prevLives - 1;
+      if (newLives <= 0) {
+        handleGameOver();
+      } else {
+        const d = DIFFICULTIES[stateRef.current.difficulty];
+        setTimeLimit(prevLimit => {
+          const newLimit = Math.min(prevLimit + d.inc, 4000);
+          setTimeout(() => startRound(newLimit), 800);
+          return newLimit;
+        });
+      }
+      return newLives;
+    });
   };
 
-  const startRound = useCallback((currentLimit, customPalette = null) => {
+  const startRound = (currentLimit, customPalette = null) => {
+    stateRef.current.isProcessing = false;
     if (tickRef.current) cancelAnimationFrame(tickRef.current);
     
     setFeedback({ text: '', type: '' });
-    const activePalette = customPalette || palette;
-    const word = pickWord(activePalette);
-    setCurrentWord(word);
-    setTimeLeft(currentLimit);
     
+    // 렌더링 시 최신 palette를 사용하기 위해 함수형 업데이트 대신 직접 접근
+    // 초기화 시 전달받은 customPalette가 있으면 그걸 쓰고, 아니면 컴포넌트 상태 사용
+    setPalette(prevPalette => {
+      const activePalette = customPalette || prevPalette;
+      const word = pickWord(activePalette);
+      setCurrentWord(word);
+      return activePalette;
+    });
+
+    setTimeLeft(currentLimit);
     startTsRef.current = performance.now();
     
     const tick = (now) => {
+      if (stateRef.current.gameState !== 'playing' || stateRef.current.isProcessing) return;
+      
       const elapsed = now - startTsRef.current;
       const remaining = Math.max(0, currentLimit - elapsed);
       setTimeLeft(remaining);
@@ -156,28 +185,58 @@ export default function ColorMatchPage() {
     };
     
     tickRef.current = requestAnimationFrame(tick);
-  }, [difficulty, lives, palette, pickWord]);
+  };
+
+  const startGame = (diffKey) => {
+    const d = DIFFICULTIES[diffKey];
+    const newPalette = ALL_COLORS.slice(0, d.colors);
+    
+    setDifficulty(diffKey);
+    setPalette(newPalette);
+    setScore(0);
+    setStreak(0);
+    setLives(3);
+    setTimeLimit(d.start);
+    setGameState('playing');
+    
+    stateRef.current.isProcessing = false;
+    stateRef.current.difficulty = diffKey;
+    stateRef.current.lives = 3;
+    stateRef.current.timeLimit = d.start;
+    
+    totalPlayStartRef.current = Date.now();
+    startRound(d.start, newPalette);
+  };
 
   const handleAnswer = (chosenColor) => {
-    if (gameState !== 'playing' || timeLeft <= 0 || lives <= 0) return;
-    if (tickRef.current) cancelAnimationFrame(tickRef.current);
+    if (gameState !== 'playing' || stateRef.current.isProcessing) return;
     
-    if (chosenColor.name === currentWord.meaning.name) {
-      const newStreak = streak + 1;
-      setStreak(newStreak);
-      const mult = Math.min(4, 1 + Math.floor(newStreak / 5));
-      const gained = 10 * mult;
-      setScore(s => s + gained);
-      
+    const cw = stateRef.current.currentWord;
+    if (!cw) return;
+
+    if (chosenColor.name === cw.meaning.name) {
+      // 정답 처리
+      stateRef.current.isProcessing = true;
+      if (tickRef.current) cancelAnimationFrame(tickRef.current);
+
       triggerAnimation('correct');
       setFeedback({ text: '정답입니다!', type: 'correct' });
+
+      setStreak(prevStreak => {
+        const newStreak = prevStreak + 1;
+        const mult = Math.min(4, 1 + Math.floor(newStreak / 5));
+        setScore(s => s + (10 * mult));
+        return newStreak;
+      });
       
       const d = DIFFICULTIES[difficulty];
-      const newTimeLimit = Math.max(d.min, timeLimit - d.dec);
-      setTimeLimit(newTimeLimit);
-      
-      setTimeout(() => startRound(newTimeLimit), 500);
+      setTimeLimit(prevLimit => {
+        const newLimit = Math.max(d.min, prevLimit - d.dec);
+        setTimeout(() => startRound(newLimit), 500);
+        return newLimit;
+      });
     } else {
+      // 오답 처리
       processMistake(false);
     }
   };
@@ -306,14 +365,14 @@ export default function ColorMatchPage() {
               </div>
               <p className="text-white/80 font-medium mb-6 text-center drop-shadow">글자가 뜻하는 색의 버튼을 누르세요!</p>
 
-              {/* 색상 버튼 (스와치) */}
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-4 w-full">
+              {/* 색상 버튼 (스와치) - 동적으로 꽉 차게 변경 */}
+              <div className="flex w-full gap-2 sm:gap-3">
                 {palette.map((color) => (
                   <button
                     key={color.name}
                     onClick={() => handleAnswer(color)}
                     disabled={feedback.text !== ''}
-                    className={`aspect-square rounded-2xl shadow-lg border-2 border-white/30 active:scale-95 transition-all hover:ring-4 hover:ring-offset-2 hover:ring-offset-black/50 ${color.ring}`}
+                    className={`flex-1 h-20 sm:h-24 rounded-2xl shadow-lg border-2 border-white/30 active:scale-95 transition-all hover:ring-4 hover:ring-offset-2 hover:ring-offset-black/50 ${color.ring}`}
                     style={{ backgroundColor: color.hex, boxShadow: `0 0 20px ${color.hex}80` }}
                     aria-label={color.name}
                   ></button>
@@ -354,7 +413,7 @@ export default function ColorMatchPage() {
 
                 <div className="space-y-3">
                   <button 
-                    onClick={() => setGameState('intro')}
+                    onClick={() => startGame(difficulty)}
                     disabled={isSaving}
                     className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:from-blue-600 hover:to-indigo-700 transition-all flex items-center justify-center gap-2"
                   >
