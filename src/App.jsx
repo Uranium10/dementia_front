@@ -10,6 +10,7 @@ import PrivacyPage from './pages/PrivacyPage';
 import ReferencePage from './pages/ReferencePage';
 import ProfilePage from './pages/ProfilePage';
 import SudokuPage from './pages/games/SudokuPage';
+import GameStatsPage from './pages/GameStatsPage';
 import './App.css';
 
 /**
@@ -39,6 +40,7 @@ function App() {
         <Route path="/reference" element={<ReferencePage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/game/sudoku" element={<SudokuPage />} />
+        <Route path="/game-stats" element={<GameStatsPage />} />
       </Routes>
     </>
   );

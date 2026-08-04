@@ -22,6 +22,21 @@ export default function PreventionPage() {
   const [currentFeaturedIndex, setCurrentFeaturedIndex] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState('전체');
   const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     fetchPosts();
@@ -183,9 +198,15 @@ export default function PreventionPage() {
         <section className="bg-white rounded-3xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-slate-800">예방 게임으로 두뇌 운동하기</h2>
-            <button className="text-blue-600 text-sm font-bold flex items-center hover:underline">
-              모든 게임 보기 <ArrowRight className="w-4 h-4 ml-1" />
-            </button>
+            {session ? (
+              <button onClick={() => navigate('/game-stats')} className="text-blue-600 text-sm font-bold flex items-center hover:underline">
+                내 게임 기록 차트 보기 <ArrowRight className="w-4 h-4 ml-1" />
+              </button>
+            ) : (
+              <button className="text-blue-600 text-sm font-bold flex items-center hover:underline">
+                모든 게임 보기 <ArrowRight className="w-4 h-4 ml-1" />
+              </button>
+            )}
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

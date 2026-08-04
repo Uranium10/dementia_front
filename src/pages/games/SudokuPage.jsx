@@ -117,10 +117,13 @@ export default function SudokuPage() {
     setGameState('finished'); setIsSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) await supabase.from('game_scores').insert({
-        user_id: user.id, game_type: 'puzzle', score: 100,
-        detail: { duration_sec: elapsed, difficulty, completed: true }
-      });
+      if (user) {
+        const scoreValue = difficulty === 'easy' ? 100 : difficulty === 'medium' ? 200 : 300;
+        await supabase.from('game_scores').insert({
+          user_id: user.id, game_type: 'puzzle', score: scoreValue,
+          detail: { duration_sec: elapsed, difficulty, completed: true }
+        });
+      }
     } catch (err) { console.error(err); }
     finally { setIsSaving(false); }
   };
