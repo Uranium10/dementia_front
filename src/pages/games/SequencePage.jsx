@@ -29,7 +29,7 @@ const PLAYBACK_DELAY_MS = 600;
 export default function SequencePage() {
   const navigate = useNavigate();
   
-  const [gameState, setGameState] = useState('intro'); // 'intro', 'playing', 'gameover', 'clear'
+  const [gameState, setGameState] = useState('intro');
   const [difficulty, setDifficulty] = useState('normal');
   const [sequence, setSequence] = useState([]);
   const [playerSequence, setPlayerSequence] = useState([]);
@@ -37,6 +37,7 @@ export default function SequencePage() {
   const [activeTile, setActiveTile] = useState(null);
   const [lives, setLives] = useState(INITIAL_LIVES);
   const [score, setScore] = useState(0); 
+  const [showSuccess, setShowSuccess] = useState(false);
   
   const timeoutRefs = useRef([]);
 
@@ -80,7 +81,7 @@ export default function SequencePage() {
     
     let timeOffset = 800;
 
-    currentSeq.forEach((tileIndex, i) => {
+    currentSeq.forEach((tileIndex) => {
       const onTimeout = setTimeout(() => {
         setActiveTile(tileIndex);
       }, timeOffset);
@@ -110,7 +111,13 @@ export default function SequencePage() {
       return;
     }
 
-    const nextTile = Math.floor(Math.random() * config.gridCount);
+    // 연속으로 동일한 타일이 나오지 않도록 방지
+    let nextTile;
+    const lastTile = currentSeq.length > 0 ? currentSeq[currentSeq.length - 1] : -1;
+    do {
+      nextTile = Math.floor(Math.random() * config.gridCount);
+    } while (nextTile === lastTile);
+
     const newSeq = [...currentSeq, nextTile];
     
     setSequence(newSeq);
@@ -146,11 +153,16 @@ export default function SequencePage() {
       return;
     }
 
+    // 해당 라운드를 모두 맞춤
     if (newPlayerSeq.length === sequence.length) {
       setIsPlayback(true);
+      setShowSuccess(true);
+      
+      // 정답 팝업 노출 후 진행
       setTimeout(() => {
+        setShowSuccess(false);
         nextLevel(sequence);
-      }, 800);
+      }, 1200);
     }
   };
 
@@ -172,19 +184,22 @@ export default function SequencePage() {
   const currentConfig = DIFFICULTIES[difficulty];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col pt-20">
-      <div className="max-w-md w-full mx-auto p-4 flex-1 flex flex-col">
+    <div className="min-h-screen relative flex flex-col pt-20 bg-cover bg-center bg-no-repeat bg-fixed" style={{ backgroundImage: "url('/assets/games/sequence_bg.png')" }}>
+      {/* 백그라운드 어둡게 처리(글래스모피즘 효과용) */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-none" />
+
+      <div className="relative max-w-md w-full mx-auto p-4 flex-1 flex flex-col z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
             onClick={() => navigate('/prevention')}
-            className="p-2 text-gray-600 hover:bg-gray-200 rounded-full transition-colors"
+            className="p-2 text-white/80 hover:bg-white/20 rounded-full transition-colors backdrop-blur-md"
           >
             <Home className="w-6 h-6" />
           </button>
           <div className="flex items-center gap-2">
-            <Brain className="w-6 h-6 text-purple-500" />
-            <h1 className="text-xl font-bold text-gray-800">순서 기억하기</h1>
+            <Brain className="w-6 h-6 text-purple-300" />
+            <h1 className="text-xl font-bold text-white">순서 기억하기</h1>
           </div>
           <div className="w-10"></div>
         </div>
@@ -199,25 +214,27 @@ export default function SequencePage() {
               exit={{ opacity: 0, y: -20 }}
               className="flex-1 flex flex-col justify-center"
             >
-              <div className="bg-white rounded-3xl p-8 shadow-sm text-center mb-8">
-                <div className="w-24 h-24 bg-purple-100 rounded-2xl mx-auto flex items-center justify-center mb-6">
-                  <Play className="w-12 h-12 text-purple-600 ml-2" />
+              <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl text-center mb-8">
+                {/* 썸네일 이미지 */}
+                <div className="w-32 h-32 mx-auto mb-6 rounded-2xl overflow-hidden shadow-lg border-2 border-purple-300/30">
+                  <img src="/assets/games/sequence.png" alt="순서 기억하기 썸네일" className="w-full h-full object-cover" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">순서 기억하기</h2>
-                <p className="text-gray-600 mb-2">빛나는 사각형의 순서를 기억하고</p>
-                <p className="text-gray-600 mb-8">그대로 따라 누르세요!</p>
+                
+                <h2 className="text-2xl font-bold text-white mb-4">순서 기억하기</h2>
+                <p className="text-purple-100 mb-2">빛나는 사각형의 순서를 기억하고</p>
+                <p className="text-purple-100 mb-8 font-medium">그대로 따라 누르세요!</p>
 
                 <div className="space-y-4">
                   {Object.values(DIFFICULTIES).map((diff) => (
                     <button
                       key={diff.id}
                       onClick={() => startGame(diff.id)}
-                      className="w-full flex flex-col items-center p-4 bg-gray-50 hover:bg-purple-50 rounded-2xl transition-all group border border-gray-100 hover:border-purple-200"
+                      className="w-full flex flex-col items-center p-4 bg-white/10 hover:bg-white/20 rounded-2xl transition-all group border border-white/20 hover:border-purple-300"
                     >
-                      <span className="font-bold text-lg text-gray-800 group-hover:text-purple-600 mb-1">
+                      <span className="font-bold text-lg text-white mb-1">
                         {diff.name} 난이도
                       </span>
-                      <span className="text-sm text-gray-500">{diff.desc}</span>
+                      <span className="text-sm text-purple-200">{diff.desc}</span>
                     </button>
                   ))}
                 </div>
@@ -231,12 +248,26 @@ export default function SequencePage() {
               key="playing"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="flex-1 flex flex-col"
+              className="flex-1 flex flex-col relative"
             >
-              <div className="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm mb-8">
+              {/* 정답 팝업 */}
+              <AnimatePresence>
+                {showSuccess && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.5, y: -20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.8, y: 20 }}
+                    className="absolute inset-0 m-auto w-48 h-16 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(168,85,247,0.8)] z-50 pointer-events-none"
+                  >
+                    <span className="text-white font-extrabold text-2xl tracking-widest">정답! 🎉</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="flex justify-between items-center bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl shadow-lg mb-8">
                 <div className="flex items-center gap-2">
-                  <Star className="w-5 h-5 text-yellow-500 fill-current" />
-                  <span className="font-bold text-lg text-gray-800">
+                  <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                  <span className="font-bold text-lg text-white">
                     단계: {score} / {currentConfig.maxLevel}
                   </span>
                 </div>
@@ -246,17 +277,17 @@ export default function SequencePage() {
                       key={i}
                       className={`w-5 h-5 ${
                         i < lives
-                          ? 'text-red-500 fill-current'
-                          : 'text-gray-200'
+                          ? 'text-pink-500 fill-current drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]'
+                          : 'text-white/20'
                       } transition-colors duration-300`}
                     />
                   ))}
                 </div>
               </div>
 
-              <div className="flex-1 flex items-center justify-center">
+              <div className="flex-1 flex items-center justify-center relative">
                 <div className="w-full max-w-[360px] aspect-square">
-                  <div className={`grid ${currentConfig.gridCols} gap-3 h-full`}>
+                  <div className={`grid ${currentConfig.gridCols} gap-3 h-full p-2`}>
                     {[...Array(currentConfig.gridCount)].map((_, index) => {
                       const isActive = activeTile === index;
                       return (
@@ -266,12 +297,12 @@ export default function SequencePage() {
                           disabled={isPlayback}
                           whileTap={!isPlayback ? { scale: 0.9 } : {}}
                           className={`
-                            rounded-2xl transition-all duration-200
+                            rounded-2xl transition-all duration-200 backdrop-blur-sm
                             ${isActive 
-                              ? 'bg-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.6)] border-purple-400 z-10 scale-105' 
-                              : 'bg-white border-2 border-gray-100 shadow-sm'
+                              ? 'bg-purple-500 shadow-[0_0_25px_rgba(192,132,252,1)] border-purple-300 z-10 scale-105' 
+                              : 'bg-white/10 border-2 border-white/20 shadow-sm'
                             }
-                            ${!isPlayback && !isActive ? 'hover:border-purple-200' : ''}
+                            ${!isPlayback && !isActive ? 'hover:border-purple-300/50 hover:bg-white/20' : ''}
                             ${isPlayback ? 'cursor-default' : 'cursor-pointer'}
                           `}
                         />
@@ -283,9 +314,9 @@ export default function SequencePage() {
               
               <div className="text-center mt-8 h-8">
                 {isPlayback ? (
-                  <p className="text-purple-600 font-medium animate-pulse">순서를 기억하세요...</p>
+                  <p className="text-purple-300 font-bold text-lg animate-pulse drop-shadow-md">순서를 기억하세요...</p>
                 ) : (
-                  <p className="text-gray-600 font-medium">따라 눌러주세요!</p>
+                  <p className="text-white font-bold text-lg drop-shadow-md">따라 눌러주세요!</p>
                 )}
               </div>
             </motion.div>
@@ -299,25 +330,25 @@ export default function SequencePage() {
               animate={{ opacity: 1, y: 0 }}
               className="flex-1 flex items-center justify-center"
             >
-              <div className="bg-white rounded-3xl p-8 shadow-sm text-center w-full max-w-sm">
-                <div className="w-20 h-20 bg-red-100 rounded-full mx-auto flex items-center justify-center mb-4">
-                  <RotateCcw className="w-10 h-10 text-red-500" />
+              <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl text-center w-full max-w-sm">
+                <div className="w-20 h-20 bg-pink-500/20 rounded-full mx-auto flex items-center justify-center mb-4 border border-pink-500/30 shadow-[0_0_30px_rgba(236,72,153,0.3)]">
+                  <RotateCcw className="w-10 h-10 text-pink-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">게임 오버!</h2>
-                <p className="text-gray-600 mb-6">
+                <h2 className="text-3xl font-bold text-white mb-2">게임 오버!</h2>
+                <p className="text-purple-100 mb-6 text-lg">
                   {difficulty === 'normal' ? '보통' : '어려움'} 난이도에서<br/>
-                  <span className="font-bold text-purple-600 text-lg">{score}</span>단계를 기록했습니다.
+                  <span className="font-bold text-yellow-300 text-2xl drop-shadow-md">{score}</span>단계를 기록했습니다.
                 </p>
                 <div className="space-y-3">
                   <button
                     onClick={() => startGame(difficulty)}
-                    className="w-full py-4 bg-purple-600 text-white rounded-xl font-bold text-lg hover:bg-purple-700 transition-colors shadow-lg shadow-purple-200"
+                    className="w-full py-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl font-bold text-lg hover:from-purple-600 hover:to-indigo-700 transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)]"
                   >
                     다시 하기
                   </button>
                   <button
                     onClick={() => setGameState('intro')}
-                    className="w-full py-4 bg-gray-100 text-gray-700 rounded-xl font-bold text-lg hover:bg-gray-200 transition-colors"
+                    className="w-full py-4 bg-white/10 text-white rounded-xl font-bold text-lg hover:bg-white/20 transition-all border border-white/10"
                   >
                     메뉴로 돌아가기
                   </button>
@@ -334,26 +365,26 @@ export default function SequencePage() {
               animate={{ opacity: 1, y: 0 }}
               className="flex-1 flex items-center justify-center"
             >
-              <div className="bg-white rounded-3xl p-8 shadow-sm text-center w-full max-w-sm">
-                <div className="w-24 h-24 bg-yellow-100 rounded-full mx-auto flex items-center justify-center mb-6">
-                  <Trophy className="w-12 h-12 text-yellow-500" />
+              <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl text-center w-full max-w-sm">
+                <div className="w-24 h-24 bg-yellow-400/20 rounded-full mx-auto flex items-center justify-center mb-6 border border-yellow-400/30 shadow-[0_0_30px_rgba(250,204,21,0.3)]">
+                  <Trophy className="w-12 h-12 text-yellow-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">목표 달성!</h2>
-                <p className="text-gray-600 mb-8">
+                <h2 className="text-3xl font-bold text-white mb-2">목표 달성!</h2>
+                <p className="text-purple-100 mb-8 text-lg">
                   {difficulty === 'normal' ? '보통' : '어려움'} 난이도의<br/>
-                  모든 단계({score}단계)를 완벽하게 통과했습니다!
+                  모든 단계(<span className="text-yellow-300 font-bold">{score}</span>단계)를 완벽하게 통과했습니다!
                 </p>
                 <div className="space-y-3">
                   <button
                     onClick={() => setGameState('intro')}
-                    className="w-full py-4 bg-purple-600 text-white rounded-xl font-bold text-lg hover:bg-purple-700 transition-colors shadow-lg shadow-purple-200 flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl font-bold text-lg hover:from-purple-600 hover:to-indigo-700 transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)] flex items-center justify-center gap-2"
                   >
                     다른 난이도 도전
                     <ChevronRight className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => navigate('/stats')}
-                    className="w-full py-4 bg-gray-100 text-gray-700 rounded-xl font-bold text-lg hover:bg-gray-200 transition-colors"
+                    className="w-full py-4 bg-white/10 text-white rounded-xl font-bold text-lg hover:bg-white/20 transition-all border border-white/10"
                   >
                     통계 확인하기
                   </button>
