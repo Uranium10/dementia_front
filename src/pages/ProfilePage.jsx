@@ -263,13 +263,16 @@ export default function ProfilePage() {
                   <button 
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploadingAvatar}
-                    className="absolute inset-0 bg-black/40 text-white rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed"
+                    className="absolute inset-0 bg-black/50 text-white rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed"
                     title="프로필 사진 변경"
                   >
                     {isUploadingAvatar ? (
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     ) : (
-                      <Camera className="w-6 h-6" />
+                      <>
+                        <Camera className="w-6 h-6 mb-1" />
+                        <span className="text-[10px] font-bold">프로필 변경</span>
+                      </>
                     )}
                   </button>
                   <input 

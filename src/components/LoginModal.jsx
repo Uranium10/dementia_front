@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { X, Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
+import { X, Mail, Lock, AlertCircle, ArrowRight, Camera } from 'lucide-react';
 
 export default function LoginModal({ isOpen, onClose }) {
   const [view, setView] = useState('login'); // 'login' | 'signup' | 'reset'
@@ -9,6 +9,11 @@ export default function LoginModal({ isOpen, onClose }) {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  
+  // Avatar State
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const fileInputRef = useRef(null);
 
   if (!isOpen) return null;
 
@@ -18,7 +23,74 @@ export default function LoginModal({ isOpen, onClose }) {
     setPassword('');
     setErrorMsg('');
     setSuccessMsg('');
+    setAvatarFile(null);
+    setAvatarPreview(null);
     onClose();
+  };
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setErrorMsg('이미지가 너무 큽니다. (최대 2MB)');
+        return;
+      }
+      setErrorMsg('');
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const uploadAvatar = async (userId) => {
+    if (!avatarFile) return null;
+    try {
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(avatarFile);
+      
+      const blob = await new Promise((resolve, reject) => {
+        img.onload = () => {
+          URL.revokeObjectURL(objectUrl);
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          canvas.width = 400;
+          canvas.height = 400;
+          
+          const size = Math.min(img.width, img.height);
+          const sx = (img.width - size) / 2;
+          const sy = (img.height - size) / 2;
+          
+          ctx.drawImage(img, sx, sy, size, size, 0, 0, 400, 400);
+          
+          canvas.toBlob(
+            (b) => {
+              if (!b) reject(new Error('Canvas toBlob failed'));
+              else resolve(b);
+            },
+            'image/jpeg',
+            0.9
+          );
+        };
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = objectUrl;
+      });
+
+      const newFileName = `${userId}/profile_${Date.now()}.jpg`;
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(newFileName, blob, {
+          contentType: 'image/jpeg',
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(newFileName);
+      return publicUrl;
+    } catch (err) {
+      console.error('Avatar upload failed:', err);
+      return null;
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -60,10 +132,22 @@ export default function LoginModal({ isOpen, onClose }) {
         if (error) throw error;
         
         if (data?.session) {
-          // 세션이 반환되었다면 (이메일 인증이 꺼져 있는 경우) 즉시 로그인 성공
+          // 세션이 반환되었다면 (이메일 인증이 꺼져 있는 경우) 
+          // 프로필 이미지가 있다면 업로드 후 metadata 갱신
+          if (avatarFile && data.user) {
+            setSuccessMsg('프로필 사진을 등록 중입니다...');
+            const avatarUrl = await uploadAvatar(data.user.id);
+            if (avatarUrl) {
+              await supabase.auth.updateUser({
+                data: { avatar_url: avatarUrl }
+              });
+              // 세션 업데이트를 위해 세션 강제 리프레시 필요할 수 있지만, 
+              // onAuthStateChange에서 알아서 갱신되거나 App 레벨에서 가져옴
+            }
+          }
           handleClose();
         } else {
-          // 이메일 인증이 켜져 있는 경우 안내 문구 표시
+          // 이메일 인증이 켜져 있는 경우 안내 문구 표시 (이 시점에선 세션이 없어 사진 업로드 불가)
           setSuccessMsg('가입 완료! 이메일 인증 링크를 확인해 주세요.');
           setView('login');
         }
@@ -143,6 +227,35 @@ export default function LoginModal({ isOpen, onClose }) {
             )}
 
             <form onSubmit={handleEmailAuth} className="space-y-4">
+              
+              {/* Profile Avatar Upload (Only on Signup) */}
+              {view === 'signup' && (
+                <div className="flex flex-col items-center justify-center mb-6">
+                  <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                    <div className={`w-20 h-20 rounded-full flex items-center justify-center overflow-hidden border-2 transition-colors ${avatarPreview ? 'border-blue-500' : 'border-dashed border-slate-300 bg-slate-50 group-hover:border-blue-400 group-hover:bg-blue-50'}`}>
+                      {avatarPreview ? (
+                        <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <Camera className="w-8 h-8 text-slate-400 group-hover:text-blue-500 transition-colors" />
+                      )}
+                    </div>
+                    {/* Hover Overlay */}
+                    <div className="absolute inset-0 bg-black/50 text-white rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Camera className="w-5 h-5 mb-0.5" />
+                      <span className="text-[10px] font-bold">{avatarPreview ? '변경' : '등록'}</span>
+                    </div>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      ref={fileInputRef} 
+                      onChange={handleAvatarChange} 
+                    />
+                  </div>
+                  <span className="text-xs text-slate-500 mt-2 font-medium">프로필 사진 (선택)</span>
+                </div>
+              )}
+
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-500 ml-1">이메일</label>
                 <div className="relative">
