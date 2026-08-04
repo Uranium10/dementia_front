@@ -53,6 +53,7 @@ export default function AuthButton() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setMenuOpen(false);
+    navigate('/');
   };
 
   if (loading) {
