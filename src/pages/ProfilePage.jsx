@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import { User, Lock, Trash2, ChevronDown, ChevronUp, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { User, Lock, Trash2, ChevronDown, ChevronUp, AlertCircle, CheckCircle2, Camera } from 'lucide-react';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const fileInputRef = React.useRef(null);
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   
@@ -16,6 +17,10 @@ export default function ProfilePage() {
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // Avatar Upload State
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarUploadError, setAvatarUploadError] = useState('');
 
   // Delete Account State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -88,6 +93,100 @@ export default function ProfilePage() {
     }
   };
 
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setAvatarUploadError('');
+    setIsUploadingAvatar(true);
+
+    try {
+      // 1. Resize and compress using Canvas
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      
+      const blob = await new Promise((resolve, reject) => {
+        img.onload = () => {
+          URL.revokeObjectURL(objectUrl);
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // 400x400 center-crop
+          canvas.width = 400;
+          canvas.height = 400;
+          
+          const size = Math.min(img.width, img.height);
+          const sx = (img.width - size) / 2;
+          const sy = (img.height - size) / 2;
+          
+          ctx.drawImage(img, sx, sy, size, size, 0, 0, 400, 400);
+          
+          canvas.toBlob(
+            (b) => {
+              if (!b) reject(new Error('Canvas toBlob failed'));
+              else resolve(b);
+            },
+            'image/jpeg',
+            0.9
+          );
+        };
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = objectUrl;
+      });
+
+      if (blob.size > 2 * 1024 * 1024) {
+        throw new Error('이미지가 너무 큽니다. 다른 사진을 선택해주세요.');
+      }
+
+      // 2. Upload to Storage
+      // 보관할 옛날 파일 경로 찾기
+      let oldFilePath = null;
+      if (avatarUrl && avatarUrl.includes('/storage/v1/object/public/avatars/')) {
+         oldFilePath = avatarUrl.split('/storage/v1/object/public/avatars/')[1];
+      }
+      
+      const newFileName = `${user.id}/profile_${Date.now()}.jpg`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(newFileName, blob, {
+          contentType: 'image/jpeg',
+          upsert: false
+        });
+
+      if (uploadError) throw new Error('업로드에 실패했습니다. 다시 시도해주세요.');
+
+      // 갱신된 URL 얻기
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(newFileName);
+      
+      if (!publicUrl) throw new Error('업로드에 실패했습니다. 다시 시도해주세요.');
+
+      // metadata 갱신
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: { avatar_url: publicUrl }
+      });
+      
+      if (updateError) throw new Error('프로필 사진 갱신에 실패했습니다.');
+
+      // 성공 시 기존 파일 삭제
+      if (oldFilePath) {
+        supabase.storage.from('avatars').remove([oldFilePath]).catch(err => console.log('Old avatar cleanup failed:', err));
+      }
+
+      // UI 갱신을 위해 세션 업데이트 (새로고침 없이 반영)
+      const { data: { session: newSession } } = await supabase.auth.getSession();
+      setSession(newSession);
+      
+    } catch (err) {
+      setAvatarUploadError(err.message || '업로드 중 오류가 발생했습니다.');
+    } finally {
+      setIsUploadingAvatar(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   const handleDeleteAccount = async (e) => {
     e.preventDefault();
     setDeleteError('');
@@ -143,14 +242,47 @@ export default function ProfilePage() {
         <h1 className="text-3xl font-extrabold text-slate-900 mb-8 tracking-tight">계정 정보</h1>
 
         <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100 mb-6 transition-all hover:shadow-md">
+          {avatarUploadError && (
+            <div className="flex items-center gap-2 p-3 bg-red-50 text-red-600 rounded-xl text-sm font-medium border border-red-100 mb-6">
+              <AlertCircle className="w-4 h-4 shrink-0" /> {avatarUploadError}
+            </div>
+          )}
+          
           <div className="flex items-center gap-6 mb-8">
-            {avatarUrl ? (
-              <img src={avatarUrl} alt="profile" className="w-20 h-20 rounded-full object-cover shadow-sm border border-slate-100" referrerPolicy="no-referrer" />
-            ) : (
-              <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center font-bold text-3xl uppercase border border-blue-100 shadow-sm">
-                {fullName.charAt(0)}
-              </div>
-            )}
+            <div className="relative group">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="profile" className="w-20 h-20 rounded-full object-cover shadow-sm border border-slate-100" referrerPolicy="no-referrer" />
+              ) : (
+                <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center font-bold text-3xl uppercase border border-blue-100 shadow-sm">
+                  {fullName.charAt(0)}
+                </div>
+              )}
+              
+              {!isSocialLogin && (
+                <>
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploadingAvatar}
+                    className="absolute inset-0 bg-black/40 text-white rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed"
+                    title="프로필 사진 변경"
+                  >
+                    {isUploadingAvatar ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <Camera className="w-6 h-6" />
+                    )}
+                  </button>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    ref={fileInputRef} 
+                    onChange={handleAvatarUpload} 
+                  />
+                </>
+              )}
+            </div>
+            
             <div>
               <h2 className="text-2xl font-bold text-slate-800 tracking-tight">{fullName}</h2>
               <p className="text-slate-500 mt-1">{user.email}</p>
