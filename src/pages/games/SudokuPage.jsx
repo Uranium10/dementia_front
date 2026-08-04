@@ -186,7 +186,10 @@ export default function SudokuPage() {
                 <h2 className="text-lg font-black text-[#2C3E50] tracking-wide uppercase">스도쿠</h2>
               </div>
             </div>
-            <button onClick={() => navigate(-1)}
+            <button onClick={() => {
+                if (gameState === 'intro') navigate('/prevention');
+                else setGameState('intro');
+              }}
               className="relative z-10 flex items-center gap-1 text-slate-500 font-bold text-sm hover:bg-white/40 px-2 py-1 rounded-full transition-colors">
               <ArrowLeft className="w-5 h-5" /> 이전
             </button>
