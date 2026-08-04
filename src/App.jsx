@@ -8,6 +8,7 @@ import PostDetailPage from './pages/PostDetailPage';
 import GuidePage from './pages/GuidePage';
 import PrivacyPage from './pages/PrivacyPage';
 import ReferencePage from './pages/ReferencePage';
+import ProfilePage from './pages/ProfilePage';
 import './App.css';
 
 /**
@@ -36,6 +37,7 @@ function App() {
         <Route path="/guide" element={<GuidePage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/reference" element={<ReferencePage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </>
   );

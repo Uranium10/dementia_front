@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { User, LogOut, RefreshCcw } from 'lucide-react';
 import LoginModal from './LoginModal';
 
 export default function AuthButton() {
+  const navigate = useNavigate();
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -102,11 +104,11 @@ export default function AuthButton() {
             <button
               onClick={() => {
                 setMenuOpen(false);
-                handleSignIn();
+                navigate('/profile');
               }}
               className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 transition-colors font-medium"
             >
-              계정 전환
+              계정 정보
             </button>
             <button
               onClick={handleSignOut}
