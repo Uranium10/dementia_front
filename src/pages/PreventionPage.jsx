@@ -13,6 +13,13 @@ const GAMES = [
     image: '/assets/games/sudoku.png',
     path: '/game/sudoku'
   },
+  {
+    id: 2,
+    title: '색깔 맞추기',
+    desc: '글자의 뜻을 찾아 주의력과 억제력을 기르세요.',
+    image: '/assets/games/color_match.png',
+    path: '/game/color-match'
+  }
 ];
 
 export default function PreventionPage() {
