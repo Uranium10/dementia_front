@@ -26,6 +26,13 @@ const GAMES = [
     desc: '나타난 순서를 기억하고 맞춰 실행기능을 돕는 훈련',
     image: '/assets/games/sequence.png',
     path: '/game/sequence'
+  },
+  {
+    id: 4,
+    title: '카드 짝 맞추기',
+    desc: '숨겨진 카드의 짝을 기억하여 단기 기억력을 향상하세요.',
+    image: '/assets/games/card_match_thumbnail.png',
+    path: '/game/card-match'
   }
 ];
 

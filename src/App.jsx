@@ -12,6 +12,7 @@ import ProfilePage from './pages/ProfilePage';
 import SudokuPage from './pages/games/SudokuPage';
 import ColorMatchPage from './pages/games/ColorMatchPage';
 import SequencePage from './pages/games/SequencePage';
+import CardMatchPage from './pages/games/CardMatchPage';
 import GameStatsPage from './pages/GameStatsPage';
 import './App.css';
 
@@ -44,6 +45,7 @@ function App() {
         <Route path="/game/sudoku" element={<SudokuPage />} />
         <Route path="/game/color-match" element={<ColorMatchPage />} />
         <Route path="/game/sequence" element={<SequencePage />} />
+        <Route path="/game/card-match" element={<CardMatchPage />} />
         <Route path="/game-stats" element={<GameStatsPage />} />
       </Routes>
     </>
