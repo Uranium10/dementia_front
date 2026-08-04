@@ -56,12 +56,17 @@ export default function SequencePage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      const d = new Date();
+      const tzOffset = d.getTimezoneOffset() * 60000;
+      const localDate = new Date(d.getTime() - tzOffset).toISOString().split('T')[0];
+
       const { error } = await supabase
         .from('game_scores')
         .insert({
           user_id: user.id,
           game_type: 'sequence',
           score: finalScore,
+          play_date: localDate,
           detail: {
             difficulty,
             cleared: isClear,

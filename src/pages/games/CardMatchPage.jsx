@@ -128,10 +128,15 @@ export default function CardMatchPage() {
       const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
       setElapsedTime(duration);
 
+      const d = new Date();
+      const tzOffset = d.getTimezoneOffset() * 60000;
+      const localDate = new Date(d.getTime() - tzOffset).toISOString().split('T')[0];
+
       const { error } = await supabase.from('game_scores').insert({
         user_id: user.id,
         game_type: 'card_match',
         score: finalScore,
+        play_date: localDate,
         detail: { difficulty: stateRef.current.difficulty, cleared: isCleared, duration_sec: duration }
       });
 

@@ -93,10 +93,15 @@ export default function ColorMatchPage() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        const d = new Date();
+        const tzOffset = d.getTimezoneOffset() * 60000;
+        const localDate = new Date(d.getTime() - tzOffset).toISOString().split('T')[0];
+
         await supabase.from('game_scores').insert({
           user_id: user.id,
           game_type: 'color_match',
           score: finalScore,
+          play_date: localDate,
           detail: { duration_sec: finalElapsedTime, difficulty: diffKey, completed: true }
         });
       }

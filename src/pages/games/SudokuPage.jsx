@@ -126,6 +126,12 @@ export default function SudokuPage() {
     checkWin(newBoard);
   };
 
+  const getLocalDateString = () => {
+    const d = new Date();
+    const tzOffset = d.getTimezoneOffset() * 60000;
+    return new Date(d.getTime() - tzOffset).toISOString().split('T')[0];
+  };
+
   const checkWin = async (currentBoard) => {
     for (let i = 0; i < 9; i++)
       for (let j = 0; j < 9; j++)
@@ -137,7 +143,10 @@ export default function SudokuPage() {
       if (user) {
         const scoreValue = difficulty === 'easy' ? 100 : difficulty === 'medium' ? 200 : 300;
         await supabase.from('game_scores').insert({
-          user_id: user.id, game_type: 'puzzle', score: scoreValue,
+          user_id: user.id, 
+          game_type: 'puzzle', 
+          score: scoreValue,
+          play_date: getLocalDateString(),
           detail: { duration_sec: elapsed, difficulty, completed: true }
         });
       }
