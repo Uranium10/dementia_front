@@ -6,10 +6,13 @@ import { supabase } from '../lib/supabaseClient';
 const CATEGORIES = ['전체', '식습관', '운동', '수면', '두뇌훈련', '생활습관'];
 
 const GAMES = [
-  { id: 1, title: '기억력 카드', desc: '카드를 기억하고 짝을 맞춰보세요.', icon: <BrainCircuit className="w-8 h-8 text-blue-500" />, color: 'bg-blue-50 border-blue-100' },
-  { id: 2, title: '퍼즐 맞추기', desc: '조각을 맞춰 그림을 완성해보세요.', icon: <Puzzle className="w-8 h-8 text-yellow-500" />, color: 'bg-yellow-50 border-yellow-100' },
-  { id: 3, title: '순서 기억하기', desc: '숫자 또는 색깔 순서를 기억해보세요.', icon: <div className="flex gap-1 text-green-500 font-bold"><span className="bg-green-200 px-1 rounded">1</span><span className="bg-green-200 px-1 rounded">2</span><span className="bg-green-200 px-1 rounded">3</span></div>, color: 'bg-green-50 border-green-100' },
-  { id: 4, title: '단어 기억하기', desc: '단어를 읽고 기억해보세요.', icon: <Gamepad2 className="w-8 h-8 text-purple-500" />, color: 'bg-purple-50 border-purple-100' },
+  { 
+    id: 1, 
+    title: '퍼즐 맞추기', 
+    desc: '스도쿠 퍼즐을 완성하며 논리력을 기르세요.', 
+    image: '/assets/games/sudoku.png',
+    path: '/game/sudoku'
+  },
 ];
 
 export default function PreventionPage() {
@@ -187,15 +190,21 @@ export default function PreventionPage() {
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {GAMES.map(game => (
-              <div key={game.id} className={`p-4 rounded-2xl flex flex-col items-center text-center border ${game.color} hover:shadow-md transition-shadow cursor-pointer`}>
-                <div className="h-16 flex items-center justify-center mb-2">
-                  {game.icon}
+              <div 
+                key={game.id} 
+                onClick={() => navigate(game.path)}
+                className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md transition-all cursor-pointer group flex flex-col"
+              >
+                <div className="aspect-square bg-slate-50 overflow-hidden relative">
+                  <img src={game.image} alt={game.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 </div>
-                <h4 className="font-bold text-slate-800 text-sm mb-1">{game.title}</h4>
-                <p className="text-[10px] text-slate-500 mb-4">{game.desc}</p>
-                <button className="mt-auto px-4 py-1.5 bg-white border border-blue-200 text-blue-600 text-xs font-bold rounded-full hover:bg-blue-50 w-full transition-colors">
-                  게임 시작
-                </button>
+                <div className="p-4 flex flex-col flex-1 text-center">
+                  <h4 className="font-bold text-slate-800 text-sm mb-1 group-hover:text-blue-600 transition-colors">{game.title}</h4>
+                  <p className="text-[10px] text-slate-500 mb-4 flex-1">{game.desc}</p>
+                  <button className="px-4 py-1.5 bg-blue-50 text-blue-600 text-xs font-bold rounded-full group-hover:bg-blue-600 group-hover:text-white transition-colors w-full">
+                    게임 시작
+                  </button>
+                </div>
               </div>
             ))}
           </div>

@@ -9,6 +9,7 @@ import GuidePage from './pages/GuidePage';
 import PrivacyPage from './pages/PrivacyPage';
 import ReferencePage from './pages/ReferencePage';
 import ProfilePage from './pages/ProfilePage';
+import SudokuPage from './pages/games/SudokuPage';
 import './App.css';
 
 /**
@@ -18,9 +19,8 @@ function App() {
   // 현재 브라우저의 경로(URL) 정보를 가져오는 React Router Hook입니다.
   const location = useLocation();
 
-  // 프롬프트(채팅) 페이지는 자체적인 전용 헤더와 뒤로가기 버튼이 있으므로,
-  // 글로벌 사이트 헤더를 숨기기 위한 조건입니다.
-  const hideGlobalHeader = location.pathname === '/prompt';
+  // 프롬프트(채팅) 페이지 및 게임 전용 페이지는 자체 헤더가 있으므로 글로벌 헤더 숨김
+  const hideGlobalHeader = location.pathname === '/prompt' || location.pathname.startsWith('/game');
 
   return (
     <>
@@ -38,6 +38,7 @@ function App() {
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/reference" element={<ReferencePage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/game/sudoku" element={<SudokuPage />} />
       </Routes>
     </>
   );
