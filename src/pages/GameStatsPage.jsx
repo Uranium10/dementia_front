@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import {
   ArrowLeft, Brain, TrendingDown, Clock, AlertCircle,
@@ -48,12 +48,26 @@ const GAME_TYPES = [
     path: '/game/sequence',
     unit: '단계'
   },
+  { 
+    id: 'card_match', 
+    name: '카드 짝 맞추기', 
+    icon: 'Grid', 
+    desc: '숨겨진 카드의 짝을 기억하여 단기 기억력을 향상', 
+    type: 'score', 
+    themeColor: '#10b981', 
+    path: '/game/card-match',
+    unit: '점'
+  },
 ];
 
 export default function GameStatsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const initialTab = searchParams.get('tab') || 'puzzle';
+
   const [session, setSession] = useState(null);
-  const [selectedGame, setSelectedGame] = useState('puzzle');
+  const [selectedGame, setSelectedGame] = useState(initialTab);
   const [allScores, setAllScores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

@@ -182,7 +182,7 @@ export default function CardMatchPage() {
 
   // UI 공통 버튼
   const renderStatsButton = () => (
-    <button onClick={() => navigate('/game-stats')} className="w-full bg-[#1A2530] text-white/90 font-bold text-lg py-4 rounded-xl border border-white/20 hover:bg-[#2C3E50] transition-colors shadow-lg">
+    <button onClick={() => navigate('/game-stats?tab=card_match')} className="w-full bg-[#1A2530] text-white/90 font-bold text-lg py-4 rounded-xl border border-white/20 hover:bg-[#2C3E50] transition-colors shadow-lg">
       통계 확인하기
     </button>
   );

@@ -424,7 +424,7 @@ export default function ColorMatchPage() {
                     )}
                   </button>
                   <button 
-                    onClick={() => navigate('/game-stats')}
+                    onClick={() => navigate('/game-stats?tab=color_match')}
                     className="w-full bg-white/10 text-white font-bold py-4 rounded-xl border border-white/20 hover:bg-white/20 transition-colors"
                   >
                     통계 확인하기
