@@ -50,15 +50,16 @@ export default function ColorMatchPage() {
 
   const startGame = (diffKey) => {
     const d = DIFFICULTIES[diffKey];
+    const newPalette = ALL_COLORS.slice(0, d.colors);
     setDifficulty(diffKey);
-    setPalette(ALL_COLORS.slice(0, d.colors));
+    setPalette(newPalette);
     setScore(0);
     setStreak(0);
     setLives(3);
     setTimeLimit(d.start);
     setGameState('playing');
     totalPlayStartRef.current = Date.now();
-    startRound(d.start);
+    startRound(d.start, newPalette);
   };
 
   const pickWord = useCallback((currentPalette) => {
@@ -134,11 +135,12 @@ export default function ColorMatchPage() {
     }
   };
 
-  const startRound = useCallback((currentLimit) => {
+  const startRound = useCallback((currentLimit, customPalette = null) => {
     if (tickRef.current) cancelAnimationFrame(tickRef.current);
     
     setFeedback({ text: '', type: '' });
-    const word = pickWord(DIFFICULTIES[difficulty] ? ALL_COLORS.slice(0, DIFFICULTIES[difficulty].colors) : palette);
+    const activePalette = customPalette || palette;
+    const word = pickWord(activePalette);
     setCurrentWord(word);
     setTimeLeft(currentLimit);
     
@@ -270,7 +272,7 @@ export default function ColorMatchPage() {
               {/* 타이머 바 */}
               <div className="w-full h-3 bg-slate-200 rounded-full mb-6 overflow-hidden">
                 <div 
-                  className={`h-full rounded-full transition-all duration-75 ease-linear ${timeLeft / timeLimit < 0.25 ? 'bg-red-500' : 'bg-blue-500'}`}
+                  className={`h-full rounded-full transition-colors ${timeLeft / timeLimit < 0.25 ? 'bg-red-500' : 'bg-blue-500'}`}
                   style={{ width: `${Math.max(0, (timeLeft / timeLimit) * 100)}%` }}
                 ></div>
               </div>
