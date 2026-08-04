@@ -177,26 +177,32 @@ export default function SudokuPage() {
         className="relative z-10 w-full max-w-[440px] h-[100dvh] md:h-[95dvh] md:max-h-[820px] md:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden bg-[#FDFCF4]"
         style={{ boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25), 0 0 0 12px rgba(255,255,255,0.7)' }}
       >
-        {/* ── 상단 헤더 (고정, 최소화) ── */}
-        <div className="bg-[#D6EAF8] px-4 pt-3 pb-2 shrink-0 rounded-b-[2rem] shadow-sm z-20">
-          <div className="flex items-center justify-between">
+        {/* ── 상단 헤더 (타이틀 한 줄 배치 및 z-index 아래로) ── */}
+        <div className="bg-[#D6EAF8] px-4 pt-3 pb-6 shrink-0 z-0 relative">
+          <div className="relative flex items-center justify-between h-8">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="flex items-center gap-2">
+                <Brain className="w-5 h-5 text-[#F1948A]" />
+                <h2 className="text-lg font-black text-[#2C3E50] tracking-wide uppercase">스도쿠</h2>
+              </div>
+            </div>
             <button onClick={() => navigate(-1)}
-              className="flex items-center gap-1 text-slate-500 font-bold text-sm hover:bg-white/40 px-2 py-1 rounded-full transition-colors">
+              className="relative z-10 flex items-center gap-1 text-slate-500 font-bold text-sm hover:bg-white/40 px-2 py-1 rounded-full transition-colors">
               <ArrowLeft className="w-5 h-5" /> 이전
             </button>
-            {gameState === 'playing' && (
+            {gameState === 'playing' ? (
               <button onClick={() => setGameState('intro')}
-                className="text-[#66B2B2] font-bold flex items-center gap-1 text-sm bg-white/50 px-3 py-1.5 rounded-full hover:bg-white/80 transition-colors">
+                className="relative z-10 text-[#66B2B2] font-bold flex items-center gap-1 text-sm bg-white/50 px-3 py-1.5 rounded-full hover:bg-white/80 transition-colors">
                 <RefreshCw className="w-4 h-4" /> 리셋
               </button>
+            ) : (
+              <div className="w-16"></div>
             )}
-          </div>
-          <div className="flex items-center justify-center gap-2 mt-1">
-            <Brain className="w-5 h-5 text-[#F1948A]" />
-            <h2 className="text-lg font-black text-[#2C3E50] tracking-wide uppercase">스도쿠</h2>
           </div>
         </div>
 
+        {/* ── 메인 콘텐츠 랩핑 (위로 겹치게 만듦) ── */}
+        <div className="flex-1 flex flex-col bg-[#FDFCF4] rounded-t-[1.5rem] shadow-[0_-8px_15px_rgba(0,0,0,0.08)] relative z-10 -mt-4 overflow-hidden">
         {/* ── 인트로 화면 ── */}
         {gameState === 'intro' && (
           <div className="flex-1 flex flex-col items-center justify-center p-6 overflow-y-auto">
@@ -347,6 +353,7 @@ export default function SudokuPage() {
 
           </div>
         )}
+        </div>
       </div>
 
       {/* ── 게임 오버 모달 ── */}
