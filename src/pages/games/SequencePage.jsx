@@ -38,6 +38,7 @@ export default function SequencePage() {
   const [lives, setLives] = useState(INITIAL_LIVES);
   const [score, setScore] = useState(0); 
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showMistake, setShowMistake] = useState(false);
   
   const timeoutRefs = useRef([]);
 
@@ -111,12 +112,11 @@ export default function SequencePage() {
       return;
     }
 
-    // 연속으로 동일한 타일이 나오지 않도록 방지
+    // 전체 시퀀스 내에서 동일한 타일이 아예 중복되지 않도록 방지
     let nextTile;
-    const lastTile = currentSeq.length > 0 ? currentSeq[currentSeq.length - 1] : -1;
     do {
       nextTile = Math.floor(Math.random() * config.gridCount);
-    } while (nextTile === lastTile);
+    } while (currentSeq.includes(nextTile));
 
     const newSeq = [...currentSeq, nextTile];
     
@@ -132,6 +132,8 @@ export default function SequencePage() {
     setScore(0);
     setSequence([]);
     setPlayerSequence([]);
+    setShowSuccess(false);
+    setShowMistake(false);
     setGameState('playing');
     setTimeout(() => {
       nextLevel([]);
@@ -175,9 +177,11 @@ export default function SequencePage() {
       setGameState('gameover');
       saveGameScore(score, false);
     } else {
+      setShowMistake(true);
       setTimeout(() => {
+        setShowMistake(false);
         playSequence(sequence);
-      }, 1000);
+      }, 1200); // "다시!" 팝업 1.2초 노출 후 시퀀스 재재생
     }
   };
 
@@ -260,6 +264,17 @@ export default function SequencePage() {
                     className="absolute inset-0 m-auto w-48 h-16 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(168,85,247,0.8)] z-50 pointer-events-none"
                   >
                     <span className="text-white font-extrabold text-2xl tracking-widest">정답! 🎉</span>
+                  </motion.div>
+                )}
+                {/* 다시 팝업 */}
+                {showMistake && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.5, y: -20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.8, y: 20 }}
+                    className="absolute inset-0 m-auto w-48 h-16 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(236,72,153,0.8)] z-50 pointer-events-none"
+                  >
+                    <span className="text-white font-extrabold text-2xl tracking-widest">다시! ⚠️</span>
                   </motion.div>
                 )}
               </AnimatePresence>
