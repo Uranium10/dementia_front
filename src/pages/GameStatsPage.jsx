@@ -38,36 +38,6 @@ const GAME_TYPES = [
     path: '/game/color-match',
     unit: '점'
   },
-  { 
-    id: 'memory_card', 
-    name: '기억력 카드', 
-    icon: 'Grid', 
-    desc: '카드의 위치를 기억하여 짝을 맞추는 기억력 게임', 
-    type: 'score', 
-    themeColor: '#10b981', 
-    path: null,
-    unit: '점'
-  },
-  { 
-    id: 'sequence', 
-    name: '순서 기억하기', 
-    icon: 'Play', 
-    desc: '나타난 순서를 기억하고 맞춰 실행기능을 돕는 훈련', 
-    type: 'score', 
-    themeColor: '#a855f7', 
-    path: null,
-    unit: '단계'
-  },
-  { 
-    id: 'word_recall', 
-    name: '단어 기억하기', 
-    icon: 'BookOpen', 
-    desc: '단어 목록을 기억했다가 복기하는 작업기억 훈련', 
-    type: 'score', 
-    themeColor: '#f97316', 
-    path: null,
-    unit: '개'
-  },
 ];
 
 export default function GameStatsPage() {
