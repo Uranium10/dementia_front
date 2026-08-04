@@ -82,6 +82,23 @@ export default function SudokuPage() {
       const newBoard = board.map(row => [...row]);
       newBoard[r][c] = strVal;
       setBoard(newBoard);
+
+      // 숫자가 배치되면 해당 행, 열, 3x3 박스에 있는 동일한 노트 숫자 제거
+      const newNotes = notesBoard.map(row => [...row]);
+      for (let i = 0; i < 9; i++) {
+        newNotes[r][i] = newNotes[r][i].filter(n => n !== strVal);
+        newNotes[i][c] = newNotes[i][c].filter(n => n !== strVal);
+      }
+      const startR = Math.floor(r / 3) * 3;
+      const startC = Math.floor(c / 3) * 3;
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          newNotes[startR + i][startC + j] = newNotes[startR + i][startC + j].filter(n => n !== strVal);
+        }
+      }
+      newNotes[r][c] = []; // 해당 칸의 노트 전체 초기화
+      setNotesBoard(newNotes);
+
       if (strVal !== solution[r][c]) {
         const nm = mistakes + 1;
         setMistakes(nm);
