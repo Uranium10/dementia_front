@@ -41,6 +41,7 @@ export default function ProfilePage() {
   const metadata = user.user_metadata || {};
   const fullName = metadata.full_name || metadata.name || user.email.split('@')[0];
   const avatarUrl = metadata.avatar_url || metadata.picture;
+  const isSocialLogin = !user.app_metadata?.providers?.includes('email');
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
@@ -93,16 +94,24 @@ export default function ProfilePage() {
     setIsDeleting(true);
 
     try {
-      // Verify password
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email: user.email,
-        password: deletePassword,
-      });
+      // 본인 확인 (소셜 vs 이메일)
+      if (isSocialLogin) {
+        if (deletePassword !== user.email) {
+          setDeleteError('이메일이 일치하지 않습니다.');
+          setIsDeleting(false);
+          return;
+        }
+      } else {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: user.email,
+          password: deletePassword,
+        });
 
-      if (signInError) {
-        setDeleteError('비밀번호가 일치하지 않습니다.');
-        setIsDeleting(false);
-        return;
+        if (signInError) {
+          setDeleteError('비밀번호가 일치하지 않습니다.');
+          setIsDeleting(false);
+          return;
+        }
       }
 
       // Backend API call to delete user using service role key
@@ -151,54 +160,64 @@ export default function ProfilePage() {
           <hr className="border-slate-100 my-6" />
 
           {/* Password Change Section */}
-          <div className="mb-2">
-            <button 
-              onClick={() => setIsPasswordSectionOpen(!isPasswordSectionOpen)}
-              className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-colors text-left border border-slate-100"
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white rounded-xl shadow-sm border border-slate-100"><Lock className="w-5 h-5 text-slate-600" /></div>
-                <span className="font-bold text-slate-700">비밀번호 변경</span>
-              </div>
-              {isPasswordSectionOpen ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
-            </button>
+          {!isSocialLogin ? (
+            <div className="mb-2">
+              <button 
+                onClick={() => setIsPasswordSectionOpen(!isPasswordSectionOpen)}
+                className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-colors text-left border border-slate-100"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white rounded-xl shadow-sm border border-slate-100"><Lock className="w-5 h-5 text-slate-600" /></div>
+                  <span className="font-bold text-slate-700">비밀번호 변경</span>
+                </div>
+                {isPasswordSectionOpen ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
+              </button>
 
-            <div className={`overflow-hidden transition-all duration-300 ${isPasswordSectionOpen ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
-              <form onSubmit={handlePasswordChange} className="p-5 md:p-6 bg-white border border-slate-100 rounded-2xl space-y-5 shadow-sm">
-                {passwordError && (
-                  <div className="flex items-center gap-2 p-3 bg-red-50 text-red-600 rounded-xl text-sm font-medium border border-red-100">
-                    <AlertCircle className="w-4 h-4 shrink-0" /> {passwordError}
+              <div className={`overflow-hidden transition-all duration-300 ${isPasswordSectionOpen ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+                <form onSubmit={handlePasswordChange} className="p-5 md:p-6 bg-white border border-slate-100 rounded-2xl space-y-5 shadow-sm">
+                  {passwordError && (
+                    <div className="flex items-center gap-2 p-3 bg-red-50 text-red-600 rounded-xl text-sm font-medium border border-red-100">
+                      <AlertCircle className="w-4 h-4 shrink-0" /> {passwordError}
+                    </div>
+                  )}
+                  {passwordSuccess && (
+                    <div className="flex items-center gap-2 p-3 bg-green-50 text-green-600 rounded-xl text-sm font-medium border border-green-100">
+                      <CheckCircle2 className="w-4 h-4 shrink-0" /> 비밀번호가 성공적으로 변경되었습니다.
+                    </div>
+                  )}
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">이전 비밀번호</label>
+                    <input type="password" required value={oldPassword} onChange={e => setOldPassword(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white" />
                   </div>
-                )}
-                {passwordSuccess && (
-                  <div className="flex items-center gap-2 p-3 bg-green-50 text-green-600 rounded-xl text-sm font-medium border border-green-100">
-                    <CheckCircle2 className="w-4 h-4 shrink-0" /> 비밀번호가 성공적으로 변경되었습니다.
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">새 비밀번호</label>
+                    <input type="password" required value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white" />
                   </div>
-                )}
-                
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">이전 비밀번호</label>
-                  <input type="password" required value={oldPassword} onChange={e => setOldPassword(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white" />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">새 비밀번호</label>
-                  <input type="password" required value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white" />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">새 비밀번호 (확인)</label>
-                  <input type="password" required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white" />
-                </div>
-                
-                <button 
-                  type="submit" 
-                  disabled={isChangingPassword}
-                  className="w-full py-3.5 mt-2 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-900 transition-colors disabled:opacity-50 shadow-sm"
-                >
-                  {isChangingPassword ? '변경 중...' : '비밀번호 변경 완료'}
-                </button>
-              </form>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">새 비밀번호 (확인)</label>
+                    <input type="password" required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white" />
+                  </div>
+                  
+                  <button 
+                    type="submit" 
+                    disabled={isChangingPassword}
+                    className="w-full py-3.5 mt-2 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-900 transition-colors disabled:opacity-50 shadow-sm"
+                  >
+                    {isChangingPassword ? '변경 중...' : '비밀번호 변경 완료'}
+                  </button>
+                </form>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="p-5 md:p-6 bg-slate-50 rounded-2xl border border-slate-100 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-slate-500 shrink-0 mt-0.5" />
+              <p className="text-sm text-slate-600 leading-relaxed">
+                구글 등 소셜 로그인으로 가입한 계정은 자체 비밀번호가 없습니다.<br/>
+                보안 및 계정 관리는 해당 소셜 서비스 설정에서 진행해 주세요.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Delete Account Button */}
@@ -220,7 +239,10 @@ export default function ProfilePage() {
               <AlertCircle className="w-6 h-6 text-red-600" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 mb-2">정말 탈퇴하시겠습니까?</h3>
-            <p className="text-sm text-slate-500 mb-6 leading-relaxed">회원을 탈퇴하면 계정과 관련된 모든 정보가 즉시 영구적으로 삭제되며, 다시 복구할 수 없습니다. 계속하시려면 계정 비밀번호를 입력해주세요.</p>
+            <p className="text-sm text-slate-500 mb-6 leading-relaxed">
+              회원을 탈퇴하면 계정과 관련된 모든 정보가 즉시 영구적으로 삭제되며, 다시 복구할 수 없습니다. 
+              계속하시려면 {isSocialLogin ? '아래에 본인 이메일을 똑같이 입력해주세요.' : '계정 비밀번호를 입력해주세요.'}
+            </p>
             
             <form onSubmit={handleDeleteAccount}>
               {deleteError && (
@@ -231,9 +253,9 @@ export default function ProfilePage() {
               
               <div className="mb-6">
                 <input 
-                  type="password" 
+                  type={isSocialLogin ? 'email' : 'password'} 
                   required 
-                  placeholder="현재 비밀번호 입력"
+                  placeholder={isSocialLogin ? user.email : '현재 비밀번호 입력'}
                   value={deletePassword} 
                   onChange={e => setDeletePassword(e.target.value)} 
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white" 
@@ -250,7 +272,7 @@ export default function ProfilePage() {
                 </button>
                 <button 
                   type="submit" 
-                  disabled={isDeleting}
+                  disabled={isDeleting || deletePassword.length === 0 || (isSocialLogin && deletePassword !== user.email)}
                   className="flex-1 py-3.5 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors disabled:opacity-50 shadow-sm shadow-red-200"
                 >
                   {isDeleting ? '처리 중...' : '탈퇴 확인'}
