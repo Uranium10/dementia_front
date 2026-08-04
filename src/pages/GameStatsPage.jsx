@@ -92,7 +92,7 @@ export default function GameStatsPage() {
       return (
         <div className="bg-white p-3 rounded-xl shadow-lg border border-slate-100">
           <p className="font-bold text-slate-700 mb-1">{payload[0].payload.fullDate}</p>
-          <p className="text-[#66B2B2] font-black">
+          <p className="text-blue-600 font-black">
             <span className="text-sm font-normal text-slate-500 mr-2">최단 기록:</span>
             {formatTime(payload[0].value)}
           </p>
@@ -103,36 +103,34 @@ export default function GameStatsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFCF4] pb-20 font-sans">
-      {/* ── 상단 헤더 ── */}
-      <div className="bg-[#D6EAF8] px-4 pt-4 pb-8 shrink-0 relative z-0 rounded-b-[2.5rem] shadow-sm">
-        <div className="relative flex items-center justify-between h-8 max-w-4xl mx-auto">
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="flex items-center gap-2">
-              <Brain className="w-6 h-6 text-[#F1948A]" />
-              <h2 className="text-xl font-black text-[#2C3E50] tracking-wide">내 게임 통계</h2>
-            </div>
-          </div>
-          <button onClick={() => navigate(-1)}
-            className="relative z-10 flex items-center gap-1 text-slate-600 font-bold text-sm hover:bg-white/40 px-3 py-1.5 rounded-full transition-colors">
-            <ArrowLeft className="w-5 h-5" /> 뒤로
-          </button>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 -mt-4 relative z-10">
+    <div className="min-h-screen bg-slate-50 pb-20 font-sans">
+      <div className="max-w-4xl mx-auto px-4 pt-8 space-y-8">
         
+        {/* ── 상단 헤더 ── */}
+        <div className="flex items-center gap-4 mb-8">
+          <button onClick={() => navigate(-1)}
+            className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm hover:bg-slate-100 transition-colors text-slate-600">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="bg-blue-600 text-white p-1.5 rounded-lg shadow-sm">
+              <Brain className="w-5 h-5" />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-800">내 게임 통계</h2>
+          </div>
+        </div>
+
         {loading ? (
           <div className="bg-white rounded-3xl p-10 shadow-sm text-center flex flex-col items-center justify-center min-h-[300px]">
-            <div className="w-8 h-8 border-4 border-[#D6EAF8] border-t-[#66B2B2] rounded-full animate-spin mb-4"></div>
+            <div className="w-8 h-8 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin mb-4"></div>
             <p className="text-slate-500 font-bold">기록을 불러오는 중입니다...</p>
           </div>
         ) : error ? (
           <div className="bg-white rounded-3xl p-10 shadow-sm text-center flex flex-col items-center justify-center min-h-[300px]">
-            <AlertCircle className="w-12 h-12 text-[#F1948A] mb-4" />
+            <AlertCircle className="w-12 h-12 text-red-400 mb-4" />
             <p className="text-slate-600 font-bold mb-4">{error}</p>
             {!session && (
-              <button onClick={() => navigate('/profile')} className="px-6 py-2 bg-[#66B2B2] text-white rounded-full font-bold shadow-md hover:bg-[#539999] transition-colors">
+              <button onClick={() => navigate('/profile')} className="px-6 py-2 bg-blue-600 text-white rounded-full font-bold shadow-sm hover:bg-blue-700 transition-colors">
                 로그인 페이지로
               </button>
             )}
@@ -141,9 +139,9 @@ export default function GameStatsPage() {
           <div className="space-y-6">
             
             {/* 요약 카드 */}
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-50 flex items-center gap-6">
-              <div className="w-16 h-16 rounded-2xl bg-[#E8F8F5] flex items-center justify-center shrink-0">
-                <Clock className="w-8 h-8 text-[#1ABC9C]" />
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex items-center gap-6">
+              <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center shrink-0">
+                <Clock className="w-8 h-8 text-blue-600" />
               </div>
               <div>
                 <h3 className="text-slate-500 font-bold text-sm mb-1">스도쿠 (퍼즐)</h3>
@@ -156,10 +154,10 @@ export default function GameStatsPage() {
 
             {/* 차트 영역 */}
             {chartData.length > 0 && (
-              <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-50">
+              <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
-                    <TrendingDown className="w-5 h-5 text-[#3498DB]" />
+                    <TrendingDown className="w-5 h-5 text-blue-500" />
                     최근 30일 기록 추이 (소요 시간)
                   </h3>
                 </div>
@@ -167,28 +165,28 @@ export default function GameStatsPage() {
                 <div className="w-full h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F2F4F4" />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                       <XAxis 
                         dataKey="date" 
                         axisLine={false} 
                         tickLine={false} 
-                        tick={{ fontSize: 12, fill: '#95A5A6', fontWeight: 600 }}
+                        tick={{ fontSize: 12, fill: '#94a3b8', fontWeight: 600 }}
                         dy={10}
                       />
                       <YAxis 
                         axisLine={false} 
                         tickLine={false} 
-                        tick={{ fontSize: 12, fill: '#95A5A6', fontWeight: 600 }}
+                        tick={{ fontSize: 12, fill: '#94a3b8', fontWeight: 600 }}
                         tickFormatter={(val) => `${Math.floor(val/60)}분`}
                       />
                       <Tooltip content={<CustomTooltip />} />
                       <Line 
                         type="monotone" 
                         dataKey="duration" 
-                        stroke="#66B2B2" 
+                        stroke="#2563eb" 
                         strokeWidth={4} 
-                        dot={{ r: 5, fill: '#66B2B2', stroke: '#FFF', strokeWidth: 2 }}
-                        activeDot={{ r: 7, fill: '#1ABC9C', stroke: '#FFF', strokeWidth: 2 }}
+                        dot={{ r: 5, fill: '#2563eb', stroke: '#FFF', strokeWidth: 2 }}
+                        activeDot={{ r: 7, fill: '#1d4ed8', stroke: '#FFF', strokeWidth: 2 }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -198,9 +196,9 @@ export default function GameStatsPage() {
             
             {/* 데이터가 없을 때 안내 */}
             {chartData.length === 0 && (
-              <div className="bg-white rounded-3xl p-10 shadow-sm border border-slate-50 text-center">
+              <div className="bg-white rounded-3xl p-10 shadow-sm border border-slate-100 text-center">
                 <p className="text-slate-500 font-medium mb-6">스도쿠 게임을 플레이하고 첫 기록을 남겨보세요!</p>
-                <button onClick={() => navigate('/game/sudoku')} className="px-6 py-3 bg-[#D6EAF8] text-[#2980B9] rounded-full font-black hover:bg-[#AED6F1] transition-colors shadow-sm">
+                <button onClick={() => navigate('/game/sudoku')} className="px-6 py-3 bg-blue-50 text-blue-600 rounded-full font-black hover:bg-blue-100 transition-colors shadow-sm">
                   스도쿠 하러 가기
                 </button>
               </div>
