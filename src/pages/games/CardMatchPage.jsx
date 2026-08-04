@@ -53,9 +53,24 @@ export default function CardMatchPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [timerText, setTimerText] = useState('');
   
+  const stateRef = useRef({
+    difficulty: 'normal',
+    score: 0,
+    streak: 0,
+    matchedIdsLength: 0
+  });
+
   const timerRef = useRef(null);
   const startTimeRef = useRef(null);
   const [elapsedTime, setElapsedTime] = useState(0);
+
+  // state 동기화
+  useEffect(() => {
+    stateRef.current.difficulty = difficulty;
+    stateRef.current.score = score;
+    stateRef.current.streak = streak;
+    stateRef.current.matchedIdsLength = matchedIds.length;
+  }, [difficulty, score, streak, matchedIds]);
 
   // 게임 초기화
   const initGame = (diffKey) => {
@@ -113,12 +128,17 @@ export default function CardMatchPage() {
       const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
       setElapsedTime(duration);
 
-      await supabase.from('game_scores').insert({
+      const { error } = await supabase.from('game_scores').insert({
         user_id: user.id,
         game_type: 'card_match',
         score: finalScore,
-        detail: { difficulty, cleared: isCleared, duration_sec: duration }
+        detail: { difficulty: stateRef.current.difficulty, cleared: isCleared, duration_sec: duration }
       });
+
+      if (error) {
+        console.error('DB Insert Error:', error);
+        alert(`점수 저장 실패: DB에 'card_match' 타입이 허용되지 않았을 수 있습니다.\n상세: ${error.message}`);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -142,21 +162,25 @@ export default function CardMatchPage() {
       if (firstCard.id === secondCard.id) {
         // 일치
         setTimeout(() => {
-          setMatchedIds(prev => [...prev, firstCard.id]);
+          setMatchedIds(prev => {
+            const newMatched = [...prev, firstCard.id];
+            // 클리어 체크는 최신 배열의 길이를 기준으로 판별
+            if (newMatched.length === DIFFICULTIES[stateRef.current.difficulty].pairs) {
+              setGameState('clear');
+              const finalScore = stateRef.current.score + 100 + Math.min((stateRef.current.streak + 1) * 10, 50);
+              saveScore(finalScore, true);
+            }
+            return newMatched;
+          });
           setFlippedIndices([]);
-          const newStreak = streak + 1;
-          setStreak(newStreak);
           
-          const comboBonus = Math.min(newStreak * 10, 50); // 콤보 보너스
-          const addScore = 100 + comboBonus;
-          const newScore = score + addScore;
-          setScore(newScore);
+          setStreak(prev => {
+            const newStreak = prev + 1;
+            const comboBonus = Math.min(newStreak * 10, 50);
+            setScore(s => s + 100 + comboBonus);
+            return newStreak;
+          });
           
-          // 클리어 체크
-          if (matchedIds.length + 1 === DIFFICULTIES[difficulty].pairs) {
-            setGameState('clear');
-            saveScore(newScore, true);
-          }
           setIsProcessing(false);
         }, 500);
       } else {
@@ -168,7 +192,7 @@ export default function CardMatchPage() {
             const nl = prev - 1;
             if (nl <= 0) {
               setGameState('gameover');
-              saveScore(score, false);
+              saveScore(stateRef.current.score, false);
             }
             return nl;
           });
