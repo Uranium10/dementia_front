@@ -27,9 +27,6 @@ export default function AuthButton() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setLoading(false);
-      if (session) {
-        setIsLoginModalOpen(false); // 로그인 성공 시 모달 자동 닫기
-      }
     });
 
     return () => subscription.unsubscribe();

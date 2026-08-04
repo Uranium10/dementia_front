@@ -6,6 +6,7 @@ export default function LoginModal({ isOpen, onClose }) {
   const [view, setView] = useState('login'); // 'login' | 'signup' | 'reset'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -21,6 +22,7 @@ export default function LoginModal({ isOpen, onClose }) {
     setView('login');
     setEmail('');
     setPassword('');
+    setPasswordConfirm('');
     setErrorMsg('');
     setSuccessMsg('');
     setAvatarFile(null);
@@ -122,9 +124,19 @@ export default function LoginModal({ isOpen, onClose }) {
       if (view === 'login') {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        // 로그인 성공 시 onClose(또는 페이지 새로고침) 처리됨 (onAuthStateChange 트리거)
         handleClose();
       } else if (view === 'signup') {
+        if (password.length < 8) {
+          setErrorMsg('비밀번호는 8글자 이상이어야 합니다.');
+          setLoading(false);
+          return;
+        }
+        if (password !== passwordConfirm) {
+          setErrorMsg('비밀번호가 일치하지 않습니다.');
+          setLoading(false);
+          return;
+        }
+
         const { data, error } = await supabase.auth.signUp({ 
           email, 
           password,
@@ -132,8 +144,6 @@ export default function LoginModal({ isOpen, onClose }) {
         if (error) throw error;
         
         if (data?.session) {
-          // 세션이 반환되었다면 (이메일 인증이 꺼져 있는 경우) 
-          // 프로필 이미지가 있다면 업로드 후 metadata 갱신
           if (avatarFile && data.user) {
             setSuccessMsg('프로필 사진을 등록 중입니다...');
             const avatarUrl = await uploadAvatar(data.user.id);
@@ -141,13 +151,13 @@ export default function LoginModal({ isOpen, onClose }) {
               await supabase.auth.updateUser({
                 data: { avatar_url: avatarUrl }
               });
-              // 세션 업데이트를 위해 세션 강제 리프레시 필요할 수 있지만, 
-              // onAuthStateChange에서 알아서 갱신되거나 App 레벨에서 가져옴
+              // 새로고침하여 즉각 반영되도록 함
+              window.location.reload();
+              return; // 리로드되므로 더이상 진행 안함
             }
           }
           handleClose();
         } else {
-          // 이메일 인증이 켜져 있는 경우 안내 문구 표시 (이 시점에선 세션이 없어 사진 업로드 불가)
           setSuccessMsg('가입 완료! 이메일 인증 링크를 확인해 주세요.');
           setView('login');
         }
@@ -165,6 +175,8 @@ export default function LoginModal({ isOpen, onClose }) {
         setErrorMsg('이메일 또는 비밀번호가 올바르지 않습니다.');
       } else if (err.message.includes('User already registered')) {
         setErrorMsg('이미 가입된 이메일입니다.');
+      } else if (err.message.includes('Password should be at least')) {
+        setErrorMsg('비밀번호는 8글자 이상이어야 합니다.');
       } else {
         setErrorMsg(err.message || '인증 과정 중 오류가 발생했습니다.');
       }
@@ -296,7 +308,30 @@ export default function LoginModal({ isOpen, onClose }) {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      placeholder="비밀번호를 입력하세요"
+                      minLength={view === 'signup' ? 8 : undefined}
+                      placeholder={view === 'signup' ? "비밀번호를 입력하세요 (8자 이상)" : "비밀번호를 입력하세요"}
+                      className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all sm:text-sm"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {view === 'signup' && (
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between ml-1">
+                    <label className="text-xs font-bold text-slate-500">비밀번호 확인</label>
+                  </div>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Lock className="h-5 w-5 text-slate-400" />
+                    </div>
+                    <input
+                      type="password"
+                      value={passwordConfirm}
+                      onChange={(e) => setPasswordConfirm(e.target.value)}
+                      required
+                      minLength={8}
+                      placeholder="비밀번호를 다시 입력하세요"
                       className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all sm:text-sm"
                     />
                   </div>
