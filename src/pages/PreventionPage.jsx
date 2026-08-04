@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronRight, Clock, Gamepad2, BrainCircuit, Puzzle, ArrowRight, Lightbulb } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Clock, Gamepad2, BrainCircuit, Puzzle, ArrowRight, Lightbulb } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 
 const CATEGORIES = ['전체', '식습관', '운동', '수면', '두뇌훈련', '생활습관'];
 
 const GAMES = [
-  { 
-    id: 1, 
-    title: '스도쿠', 
-    desc: '스도쿠 퍼즐을 완성하며 논리력을 기르세요.', 
+  {
+    id: 1,
+    title: '스도쿠',
+    desc: '스도쿠 퍼즐을 완성하며 논리력을 기르세요.',
     image: '/assets/games/sudoku.png',
     path: '/game/sudoku'
   },
@@ -38,6 +38,8 @@ export default function PreventionPage() {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
 
+  const gamesScrollRef = useRef(null);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -59,22 +61,20 @@ export default function PreventionPage() {
   const fetchPosts = async () => {
     setLoading(true);
     try {
-      // 오늘의 추천 가져오기 (전체 카테고리 무관)
       const { data: featuredData } = await supabase
         .from('posts')
         .select('*')
         .eq('is_featured', true)
         .order('published_at', { ascending: false });
-      
+
       setFeaturedPosts(featuredData || []);
 
-      // 최신 정보 가져오기 (카테고리 필터)
       let query = supabase.from('posts').select('*').order('published_at', { ascending: false });
-      
+
       if (selectedCategory !== '전체') {
         query = query.eq('category', selectedCategory);
       }
-      
+
       const { data: latestData } = await query;
       setLatestPosts(latestData || []);
     } catch (error) {
@@ -84,12 +84,19 @@ export default function PreventionPage() {
     }
   };
 
+  const scrollGames = (direction) => {
+    if (gamesScrollRef.current) {
+      const scrollAmount = 220;
+      gamesScrollRef.current.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+    }
+  };
+
   const currentFeatured = featuredPosts[currentFeaturedIndex];
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       <div className="max-w-4xl mx-auto px-4 pt-8 space-y-10">
-        
+
         {/* 1. 오늘의 추천 (Featured Carousel) */}
         <section>
           <div className="flex items-center gap-2 mb-4">
@@ -98,16 +105,16 @@ export default function PreventionPage() {
             </div>
             <h2 className="text-xl font-bold text-slate-800">오늘의 추천</h2>
           </div>
-          
+
           {currentFeatured ? (
-            <div 
+            <div
               onClick={() => navigate(`/post/${currentFeatured.id}`)}
               className="bg-white rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-8 items-center relative overflow-hidden group cursor-pointer transition-all hover:shadow-md"
             >
               <div className="w-full md:w-1/2 aspect-video rounded-2xl overflow-hidden shrink-0">
-                <img 
-                  src={currentFeatured.thumbnail_url || 'https://via.placeholder.com/600x400'} 
-                  alt={currentFeatured.title} 
+                <img
+                  src={currentFeatured.thumbnail_url || 'https://via.placeholder.com/600x400'}
+                  alt={currentFeatured.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               </div>
@@ -140,7 +147,7 @@ export default function PreventionPage() {
           {featuredPosts.length > 1 && (
             <div className="flex justify-center gap-2 mt-4">
               {featuredPosts.map((_, idx) => (
-                <button 
+                <button
                   key={idx}
                   onClick={() => setCurrentFeaturedIndex(idx)}
                   className={`w-2 h-2 rounded-full transition-colors ${idx === currentFeaturedIndex ? 'bg-blue-600' : 'bg-slate-200'}`}
@@ -151,16 +158,15 @@ export default function PreventionPage() {
         </section>
 
         {/* 2. 카테고리 필터 */}
-        <section className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        <section className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           {CATEGORIES.map(cat => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-bold transition-colors ${
-                selectedCategory === cat 
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-200' 
+              className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-bold transition-colors ${selectedCategory === cat
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
                   : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
-              }`}
+                }`}
             >
               {cat}
             </button>
@@ -178,8 +184,8 @@ export default function PreventionPage() {
 
           <div className="space-y-4">
             {latestPosts.length > 0 ? latestPosts.map(post => (
-              <div 
-                key={post.id} 
+              <div
+                key={post.id}
                 onClick={() => navigate(`/post/${post.id}`)}
                 className="flex gap-4 items-center group cursor-pointer border-b border-slate-100 pb-4 last:border-0 last:pb-0"
               >
@@ -209,39 +215,58 @@ export default function PreventionPage() {
         </section>
 
         {/* 4. 예방 게임 */}
-        <section className="bg-white rounded-3xl p-6 shadow-sm">
+        <section className="bg-white rounded-3xl p-6 shadow-sm relative group/section">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-slate-800">예방 게임으로 두뇌 운동하기</h2>
-            {session ? (
+            <h2 className="text-xl font-bold text-slate-800">🧠두뇌 자극 게임</h2>
+            {session && (
               <button onClick={() => navigate('/game-stats')} className="text-blue-600 text-sm font-bold flex items-center hover:underline">
                 내 게임 기록 차트 보기 <ArrowRight className="w-4 h-4 ml-1" />
               </button>
-            ) : (
-              <button className="text-blue-600 text-sm font-bold flex items-center hover:underline">
-                모든 게임 보기 <ArrowRight className="w-4 h-4 ml-1" />
-              </button>
             )}
           </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {GAMES.map(game => (
-              <div 
-                key={game.id} 
-                onClick={() => navigate(game.path)}
-                className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md transition-all cursor-pointer group flex flex-col"
-              >
-                <div className="aspect-square bg-slate-50 overflow-hidden relative">
-                  <img src={game.image} alt={game.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+
+          <div className="relative">
+            {/* 왼쪽 패들 */}
+            <button 
+              onClick={() => scrollGames('left')}
+              className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-8 h-20 bg-white/90 border border-slate-200 shadow-md rounded-r-xl flex items-center justify-center opacity-0 group-hover/section:opacity-100 hover:bg-slate-50 hover:text-blue-600 transition-all text-slate-400"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+
+            {/* 스크롤 컨테이너 */}
+            <div 
+              ref={gamesScrollRef}
+              className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 pt-2 -mx-2 px-2"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {GAMES.map(game => (
+                <div
+                  key={game.id}
+                  onClick={() => navigate(game.path)}
+                  className="w-40 sm:w-48 shrink-0 snap-start bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md hover:border-blue-200 transition-all cursor-pointer group flex flex-col"
+                >
+                  <div className="aspect-square bg-slate-50 overflow-hidden relative">
+                    <img src={game.image} alt={game.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  </div>
+                  <div className="p-4 flex flex-col flex-1 text-center">
+                    <h4 className="font-bold text-slate-800 text-sm mb-1 group-hover:text-blue-600 transition-colors">{game.title}</h4>
+                    <p className="text-[10px] text-slate-500 mb-4 flex-1 line-clamp-2">{game.desc}</p>
+                    <button className="px-4 py-1.5 bg-blue-50 text-blue-600 text-xs font-bold rounded-full group-hover:bg-blue-600 group-hover:text-white transition-colors w-full">
+                      게임 시작
+                    </button>
+                  </div>
                 </div>
-                <div className="p-4 flex flex-col flex-1 text-center">
-                  <h4 className="font-bold text-slate-800 text-sm mb-1 group-hover:text-blue-600 transition-colors">{game.title}</h4>
-                  <p className="text-[10px] text-slate-500 mb-4 flex-1">{game.desc}</p>
-                  <button className="px-4 py-1.5 bg-blue-50 text-blue-600 text-xs font-bold rounded-full group-hover:bg-blue-600 group-hover:text-white transition-colors w-full">
-                    게임 시작
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            {/* 오른쪽 패들 */}
+            <button 
+              onClick={() => scrollGames('right')}
+              className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-8 h-20 bg-white/90 border border-slate-200 shadow-md rounded-l-xl flex items-center justify-center opacity-0 group-hover/section:opacity-100 hover:bg-slate-50 hover:text-blue-600 transition-all text-slate-400"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
           </div>
         </section>
 
@@ -260,7 +285,7 @@ export default function PreventionPage() {
             오늘의 미션 확인하기 <ChevronRight className="w-4 h-4" />
           </button>
         </section>
-        
+
       </div>
     </div>
   );
