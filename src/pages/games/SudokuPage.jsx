@@ -310,7 +310,8 @@ export default function SudokuPage() {
               <div className="flex justify-between mb-2 px-1">
                 {[1,2,3,4,5].map(num => (
                   <button key={num} onClick={() => handleInput(num)}
-                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center font-black text-xl sm:text-2xl shadow-sm active:scale-90 transition-all border-2 border-white/80 ${completedCounts[num.toString()] === 9 ? 'opacity-0 pointer-events-none' : ''}`}
+                    disabled={completedCounts[num.toString()] === 9}
+                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center font-black text-xl sm:text-2xl shadow-sm transition-all border-2 border-white/80 ${completedCounts[num.toString()] === 9 ? 'opacity-30 cursor-not-allowed' : 'active:scale-90'}`}
                     style={{ backgroundColor: PAD_COLORS[num-1], color: '#2C3E50' }}>
                     {num}
                   </button>
@@ -319,7 +320,8 @@ export default function SudokuPage() {
               <div className="flex justify-center gap-4 px-6">
                 {[6,7,8,9].map(num => (
                   <button key={num} onClick={() => handleInput(num)}
-                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center font-black text-xl sm:text-2xl shadow-sm active:scale-90 transition-all border-2 border-white/80 ${completedCounts[num.toString()] === 9 ? 'opacity-0 pointer-events-none' : ''}`}
+                    disabled={completedCounts[num.toString()] === 9}
+                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center font-black text-xl sm:text-2xl shadow-sm transition-all border-2 border-white/80 ${completedCounts[num.toString()] === 9 ? 'opacity-30 cursor-not-allowed' : 'active:scale-90'}`}
                     style={{ backgroundColor: PAD_COLORS[num-1], color: '#2C3E50' }}>
                     {num}
                   </button>
