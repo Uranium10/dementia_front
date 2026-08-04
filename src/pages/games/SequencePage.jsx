@@ -362,8 +362,14 @@ export default function SequencePage() {
                     다시 하기
                   </button>
                   <button
-                    onClick={() => setGameState('intro')}
+                    onClick={() => navigate('/game-stats')}
                     className="w-full py-4 bg-white/10 text-white rounded-xl font-bold text-lg hover:bg-white/20 transition-all border border-white/10"
+                  >
+                    통계 확인하기
+                  </button>
+                  <button
+                    onClick={() => setGameState('intro')}
+                    className="w-full py-4 bg-transparent text-purple-200 rounded-xl font-bold text-lg hover:text-white transition-all"
                   >
                     메뉴로 돌아가기
                   </button>
