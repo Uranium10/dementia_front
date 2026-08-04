@@ -164,7 +164,7 @@ export default function SudokuPage() {
 
   return (
     <div
-      className="h-[100dvh] flex flex-col items-center justify-center overflow-hidden relative"
+      className="h-[100dvh] flex flex-col items-center justify-center overflow-hidden relative p-3 sm:p-4"
       style={{ backgroundColor: '#EFF6F5', fontFamily: "'Nunito', sans-serif" }}
     >
       {/* 배경 이미지 */}
@@ -172,10 +172,10 @@ export default function SudokuPage() {
         style={{ backgroundImage: 'url(/assets/games/sudoku_bg.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
       />
 
-      {/* 스마트폰 프레임 — h-[100dvh] 안에서 flex-col로 꽉 채움 */}
+      {/* 스마트폰 프레임 — 하나의 라운드 보더 박스 (overflow: hidden, 그림자) */}
       <div
-        className="relative z-10 w-full max-w-[440px] h-[100dvh] md:h-[95dvh] md:max-h-[820px] md:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden bg-[#FDFCF4]"
-        style={{ boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25), 0 0 0 12px rgba(255,255,255,0.7)' }}
+        className="relative z-10 w-full max-w-[440px] h-full max-h-[820px] rounded-[2rem] sm:rounded-[2.5rem] flex flex-col overflow-hidden bg-[#FDFCF4]"
+        style={{ boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25), 0 0 0 8px rgba(255,255,255,0.7)' }}
       >
         {/* ── 상단 헤더 (타이틀 한 줄 배치 및 z-index 아래로) ── */}
         <div className="bg-[#D6EAF8] px-4 pt-3 pb-6 shrink-0 z-0 relative">
@@ -201,8 +201,8 @@ export default function SudokuPage() {
           </div>
         </div>
 
-        {/* ── 메인 콘텐츠 랩핑 (위로 겹치게 만듦) ── */}
-        <div className="flex-1 flex flex-col bg-[#FDFCF4] rounded-t-[1.5rem] shadow-[0_-8px_15px_rgba(0,0,0,0.08)] relative z-10 -mt-4 overflow-hidden">
+        {/* ── 메인 콘텐츠 랩핑 (그림자 제거, 라운드만 유지) ── */}
+        <div className="flex-1 flex flex-col bg-[#FDFCF4] rounded-t-[1.5rem] relative z-10 -mt-4 overflow-hidden">
         {/* ── 인트로 화면 ── */}
         {gameState === 'intro' && (
           <div className="flex-1 flex flex-col items-center justify-center p-6 overflow-y-auto">
