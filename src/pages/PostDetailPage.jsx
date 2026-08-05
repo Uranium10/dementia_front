@@ -110,7 +110,7 @@ export default function PostDetailPage() {
           </div>
 
           {/* 마크다운 본문 렌더링 */}
-          <div className="prose prose-lg prose-slate max-w-none mb-12 prose-headings:text-slate-800 prose-a:text-blue-600 hover:prose-a:text-blue-700">
+          <div className="prose prose-slate prose-img:rounded-xl max-w-none mb-12 prose-headings:text-slate-800 prose-a:text-blue-600 hover:prose-a:text-blue-700">
             <ReactMarkdown 
               rehypePlugins={[rehypeRaw]}
               components={{
