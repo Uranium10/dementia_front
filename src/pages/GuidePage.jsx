@@ -28,12 +28,14 @@ export default function GuidePage() {
         <section className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
           <div className="flex items-center gap-3 mb-6">
             <MapPin className="w-8 h-8 text-blue-600" />
-            <h2 className="text-2xl font-bold text-slate-800">2. 치매안심센터 연계 (예정)</h2>
+            <h2 className="text-2xl font-bold text-slate-800">2. 치매안심센터 연계</h2>
           </div>
-          <p className="text-slate-600 leading-relaxed">
-            상담을 마친 후, 거주하시는 지역(예: 강남구, 분당구 등)을 입력하시면 가장 가까운 국가 지정 치매안심센터의 위치, 연락처, 그리고 예약 가능한 프로그램 정보를 안내해 드립니다. 
-            (현재 이 기능은 Graph DB 구축 후 오픈될 예정입니다.)
+          <p className="text-slate-600 leading-relaxed mb-4">
+            상담을 마친 후, 상단의 '치매 센터 찾기' 메뉴를 통해 거주하시는 지역을 입력하시면 가장 가까운 국가 지정 치매안심센터의 위치, 연락처, 그리고 예약 가능한 프로그램 정보를 안내해 드립니다. 
           </p>
+          <Link to="/center-search" className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg font-bold hover:bg-blue-100 transition-colors">
+            가까운 센터 찾기 바로가기
+          </Link>
         </section>
 
         <section className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
