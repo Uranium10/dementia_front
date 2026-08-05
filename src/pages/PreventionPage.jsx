@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, ChevronLeft, Clock, Gamepad2, BrainCircuit, Puzzle, ArrowRight, Lightbulb } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
+import DailyCheckinCard from '../components/dailyCheckin/DailyCheckinCard';
 
 const CATEGORIES = ['전체', '식습관', '운동', '수면', '두뇌훈련', '생활습관', '연구'];
 
@@ -103,6 +104,9 @@ export default function PreventionPage() {
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       <div className="max-w-4xl mx-auto px-4 pt-8 space-y-10">
+
+        {/* 0. 데일리 체크인 위젯 */}
+        {session && <DailyCheckinCard session={session} />}
 
         {/* 1. 오늘의 추천 (Featured Carousel) */}
         <section>
