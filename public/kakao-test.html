@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>카카오맵 키 검증</title>
+  <!--
+    카카오맵 JavaScript 키 / 도메인 등록이 올바른지 확인하는 임시 진단 페이지.
+    '치매 센터 찾기' 지도 기능 구현 전에 키 문제를 미리 걸러내기 위한 것이다.
+
+    사용법:
+      1) npm run dev
+      2) http://localhost:5173/kakao-test.html 접속
+         (file:// 로 직접 열면 도메인 등록과 origin이 달라 무조건 실패한다)
+      3) .env.local 의 VITE_KAKAO_MAP_KEY 값을 붙여넣고 [검증 시작]
+
+    주의: public/ 아래 정적 HTML은 Vite가 처리하지 않으므로 import.meta.env 를
+    읽을 수 없다. 그래서 키를 직접 붙여넣는 방식이다.
+
+    지도 기능 구현이 끝나면 이 파일은 삭제해도 된다.
+  -->
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 24px;
+      font-family: 'Outfit', 'Noto Sans KR', -apple-system, sans-serif;
+      background: #f8fafc; color: #334155;
+    }
+    .wrap { max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 22px; font-weight: 800; color: #1e293b; margin: 0 0 4px; }
+    .sub { font-size: 14px; color: #64748b; margin: 0 0 20px; }
+    .card {
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 16px;
+      padding: 20px; margin-bottom: 16px;
+    }
+    .row { display: flex; gap: 8px; }
+    input {
+      flex: 1; padding: 12px 14px; font-size: 15px; font-family: monospace;
+      border: 1px solid #cbd5e1; border-radius: 10px; outline: none;
+    }
+    input:focus { border-color: #2563eb; }
+    button {
+      padding: 12px 20px; font-size: 15px; font-weight: 700; color: #fff;
+      background: #2563eb; border: 0; border-radius: 10px; cursor: pointer;
+      white-space: nowrap;
+    }
+    button:hover { background: #1d4ed8; }
+    button:disabled { background: #94a3b8; cursor: not-allowed; }
+    #log { margin: 16px 0 0; padding: 0; list-style: none; font-size: 14px; }
+    #log li {
+      padding: 8px 0 8px 26px; position: relative; line-height: 1.5;
+      border-top: 1px solid #f1f5f9;
+    }
+    #log li::before {
+      position: absolute; left: 0; top: 8px; font-weight: 700;
+    }
+    #log li.ok::before   { content: '✓'; color: #16a34a; }
+    #log li.bad::before  { content: '✕'; color: #dc2626; }
+    #log li.info::before { content: '·'; color: #94a3b8; }
+    #log li.wait::before { content: '…'; color: #64748b; }
+    #log code {
+      background: #f1f5f9; padding: 1px 5px; border-radius: 4px;
+      font-size: 13px;
+    }
+    #map { width: 100%; height: 420px; border-radius: 12px; background: #e2e8f0; }
+    .hint {
+      margin-top: 14px; padding: 14px 16px; background: #fef2f2;
+      border: 1px solid #fecaca; border-radius: 10px;
+      font-size: 13.5px; color: #991b1b; line-height: 1.6;
+    }
+    .hint b { display: block; margin-bottom: 4px; }
+    .hint.hidden { display: none; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>카카오맵 키 검증</h1>
+  <p class="sub">지도 기능 구현 전, JavaScript 키와 도메인 등록이 올바른지 확인합니다.</p>
+
+  <div class="card">
+    <div class="row">
+      <input id="key" placeholder="VITE_KAKAO_MAP_KEY 값을 붙여넣으세요 (32자)" autocomplete="off" spellcheck="false" />
+      <button id="run">검증 시작</button>
+    </div>
+    <ul id="log"></ul>
+    <div id="hint" class="hint hidden"></div>
+  </div>
+
+  <div class="card">
+    <div id="map"></div>
+  </div>
+</div>
+
+<script>
+  var logEl  = document.getElementById('log');
+  var hintEl = document.getElementById('hint');
+  var keyEl  = document.getElementById('key');
+  var runEl  = document.getElementById('run');
+
+  // 검증 대상 좌표: 서울특별시강남구치매안심센터 (실제 데이터의 C0001)
+  var SAMPLE = {
+    name: '서울특별시강남구치매안심센터',
+    lat: 37.5103126,
+    lng: 127.0463796,
+    addr: '서울 강남구 선릉로108길 27'
+  };
+
+  function log(cls, html) {
+    var li = document.createElement('li');
+    li.className = cls;
+    li.innerHTML = html;
+    logEl.appendChild(li);
+    return li;
+  }
+
+  function showHint(title, body) {
+    hintEl.className = 'hint';
+    hintEl.innerHTML = '<b>' + title + '</b>' + body;
+  }
+
+  // 키를 URL(?key=) 또는 localStorage에서 미리 채워준다.
+  var fromUrl = new URLSearchParams(location.search).get('key');
+  keyEl.value = fromUrl || localStorage.getItem('kakao_test_key') || '';
+
+  runEl.addEventListener('click', function () {
+    var key = keyEl.value.trim();
+    logEl.innerHTML = '';
+    hintEl.className = 'hint hidden';
+
+    // --- 1. 사전 점검: origin ---
+    if (location.protocol === 'file:') {
+      log('bad', '현재 <code>file://</code> 로 열려 있습니다. 카카오는 등록된 도메인에서만 동작합니다.');
+      showHint('file:// 로는 검증할 수 없습니다',
+        '터미널에서 <code>npm run dev</code> 를 실행한 뒤 ' +
+        '<code>http://localhost:5173/kakao-test.html</code> 로 접속하세요.');
+      return;
+    }
+    log('info', '접속 origin: <code>' + location.origin + '</code> ' +
+      '&mdash; 이 값이 카카오 콘솔의 <b>플랫폼 &gt; Web &gt; 사이트 도메인</b>에 등록되어 있어야 합니다.');
+
+    // --- 2. 사전 점검: 키 형식 ---
+    if (!key) {
+      log('bad', '키를 입력하세요.');
+      return;
+    }
+    if (!/^[0-9a-f]{32}$/i.test(key)) {
+      log('bad', '키 형식이 이상합니다. JavaScript 키는 <b>32자 16진수</b>입니다. ' +
+        '(입력값 ' + key.length + '자)');
+      showHint('JavaScript 키가 맞는지 확인하세요',
+        '카카오 콘솔 <b>앱 설정 &gt; 앱 키</b>에는 키가 4개 있습니다. ' +
+        '네이티브 앱 키 / <b>JavaScript 키</b> / REST API 키 / Admin 키 중 ' +
+        '<b>JavaScript 키</b>를 사용해야 합니다.');
+      return;
+    }
+    log('ok', '키 형식 정상 (32자 16진수)');
+
+    localStorage.setItem('kakao_test_key', key);
+    runEl.disabled = true;
+    runEl.textContent = '검증 중…';
+
+    // --- 3. SDK 스크립트 로드 ---
+    var pending = log('wait', 'SDK 스크립트 로드 중…');
+
+    var prev = document.getElementById('kakao-sdk');
+    if (prev) prev.remove();
+    if (window.kakao) { try { delete window.kakao; } catch (e) { window.kakao = undefined; } }
+
+    var s = document.createElement('script');
+    s.id = 'kakao-sdk';
+    s.src = '//dapi.kakao.com/v2/maps/sdk.js?appkey=' + key
+          + '&libraries=services,clusterer&autoload=false';
+
+    var settled = false;
+    var timer = setTimeout(function () {
+      if (settled) return;
+      settled = true;
+      pending.className = 'bad';
+      pending.innerHTML = 'SDK 로드가 10초 내에 끝나지 않았습니다 (네트워크 확인).';
+      done();
+    }, 10000);
+
+    s.onerror = function () {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      pending.className = 'bad';
+      pending.innerHTML = 'SDK 스크립트 로드 <b>실패</b>.';
+      showHint('거의 확실히 도메인 미등록입니다',
+        '개발자도구 <b>Network 탭</b>에서 <code>sdk.js</code> 응답 코드를 확인하세요.<br>' +
+        '&bull; <b>401 / 403</b> &rarr; 카카오 콘솔에 <code>' + location.origin +
+        '</code> 을 <b>포트까지 정확히</b> 등록하세요. 끝에 <code>/</code> 를 붙이지 않습니다.<br>' +
+        '&bull; <b>다른 오류</b> &rarr; 키 값이 틀렸거나, 제품 설정에서 카카오맵이 꺼져 있을 수 있습니다.');
+      done();
+    };
+
+    s.onload = function () {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      pending.className = 'ok';
+      pending.innerHTML = 'SDK 스크립트 응답 200 (키 + 도메인 통과)';
+
+      if (!window.kakao || !window.kakao.maps) {
+        log('bad', '<code>window.kakao.maps</code> 가 없습니다. SDK가 정상 응답했지만 초기화되지 않았습니다.');
+        done();
+        return;
+      }
+
+      // autoload=false 이므로 명시적으로 load() 를 호출해야 한다.
+      kakao.maps.load(function () {
+        log('ok', '<code>kakao.maps</code> 초기화 완료');
+
+        // --- 4. 지도 렌더 ---
+        try {
+          var map = new kakao.maps.Map(document.getElementById('map'), {
+            center: new kakao.maps.LatLng(SAMPLE.lat, SAMPLE.lng),
+            level: 4
+          });
+          log('ok', '지도 렌더 성공 &mdash; 아래에 강남구 지도가 보이면 정상입니다.');
+
+          var marker = new kakao.maps.Marker({
+            map: map,
+            position: new kakao.maps.LatLng(SAMPLE.lat, SAMPLE.lng)
+          });
+          new kakao.maps.CustomOverlay({
+            map: map,
+            position: new kakao.maps.LatLng(SAMPLE.lat, SAMPLE.lng),
+            yAnchor: 2.2,
+            content: '<div style="padding:6px 10px;background:#2563eb;color:#fff;' +
+                     'border-radius:8px;font-size:12px;font-weight:700;white-space:nowrap">' +
+                     SAMPLE.name + '</div>'
+          });
+          log('ok', '마커 + 커스텀 오버레이 생성 성공');
+        } catch (e) {
+          log('bad', '지도 생성 실패: <code>' + (e && e.message) + '</code>');
+          done();
+          return;
+        }
+
+        // --- 5. services 라이브러리 (주소 → 좌표) ---
+        if (!kakao.maps.services) {
+          log('bad', '<code>services</code> 라이브러리 없음 &mdash; SDK URL의 ' +
+            '<code>libraries=services</code> 를 확인하세요.');
+        } else {
+          var geocoder = new kakao.maps.services.Geocoder();
+          geocoder.addressSearch(SAMPLE.addr, function (result, status) {
+            if (status === kakao.maps.services.Status.OK) {
+              // 카카오는 x=경도, y=위도 순서다. 뒤집으면 엉뚱한 곳으로 튄다.
+              var lng = parseFloat(result[0].x);
+              var lat = parseFloat(result[0].y);
+              log('ok', '주소 → 좌표 변환 성공: <code>' + SAMPLE.addr + '</code> → ' +
+                'lat ' + lat.toFixed(6) + ', lng ' + lng.toFixed(6));
+            } else {
+              log('bad', '주소 → 좌표 변환 실패 (status: <code>' + status + '</code>). ' +
+                '지도는 되지만 주소 검색이 안 되는 상태입니다.');
+            }
+            checkClusterer();
+            done();
+          });
+          return;
+        }
+        checkClusterer();
+        done();
+      });
+    };
+
+    function checkClusterer() {
+      if (kakao.maps.MarkerClusterer) {
+        log('ok', '<code>clusterer</code> 라이브러리 사용 가능 (313개 마커 클러스터링용)');
+      } else {
+        log('bad', '<code>clusterer</code> 라이브러리 없음 &mdash; SDK URL의 ' +
+          '<code>libraries=...,clusterer</code> 를 확인하세요.');
+      }
+    }
+
+    function done() {
+      runEl.disabled = false;
+      runEl.textContent = '다시 검증';
+      var bad = logEl.querySelectorAll('li.bad').length;
+      if (bad === 0) {
+        log('ok', '<b>모두 통과했습니다. 지도 기능 구현을 시작할 수 있습니다.</b>');
+      }
+    }
+
+    document.head.appendChild(s);
+  });
+</script>
+</body>
+</html>
