@@ -2,15 +2,32 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Bot, User, CheckCircle2 } from 'lucide-react';
 
-export default function DailyCheckinModal({ onClose, sendTurn }) {
-  const [messages, setMessages] = useState([
-    { id: Date.now(), role: 'assistant', content: '안녕하세요! 오늘 하루는 어떠셨어요? 편하게 말씀해 주세요.' }
-  ]);
+const INITIAL_GREETING = {
+  role: 'assistant',
+  content: '안녕하세요! 오늘 하루는 어떠셨어요? 편하게 말씀해 주세요.'
+};
+
+// DailyCheckinCard가 이 컴포넌트를 항상 렌더링하고 isOpen으로만 표시를 토글한다
+// (부모의 status 변화로 강제 언마운트되지 않게 하려는 의도 — DailyCheckinCard.jsx 참고).
+// 그래서 "매일 초기화"는 언마운트 시점이 아니라, 매번 열리는 시점(isOpen: false -> true)에
+// 대화 state를 직접 리셋하는 방식으로 구현한다.
+export default function DailyCheckinModal({ isOpen, onClose, sendTurn }) {
+  const [messages, setMessages] = useState([{ id: 'greeting', ...INITIAL_GREETING }]);
   const [inputText, setInputText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-  
+
   const messagesEndRef = useRef(null);
+
+  // 열릴 때마다 새 대화로 초기화
+  useEffect(() => {
+    if (isOpen) {
+      setMessages([{ id: 'greeting', ...INITIAL_GREETING }]);
+      setInputText('');
+      setIsSubmitting(false);
+      setIsCompleted(false);
+    }
+  }, [isOpen]);
 
   // 스크롤 맨 아래로
   const scrollToBottom = () => {
@@ -84,10 +101,11 @@ export default function DailyCheckinModal({ onClose, sendTurn }) {
 
   return (
     <AnimatePresence>
+      {isOpen && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
         {/* 모달 바깥 배경 클릭 시 닫기 */}
         <div className="absolute inset-0" onClick={handleClose} />
-        
+
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -197,6 +215,7 @@ export default function DailyCheckinModal({ onClose, sendTurn }) {
           </div>
         </motion.div>
       </div>
+      )}
     </AnimatePresence>
   );
 }
