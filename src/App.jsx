@@ -9,6 +9,7 @@ import GuidePage from './pages/GuidePage';
 import PrivacyPage from './pages/PrivacyPage';
 import ReferencePage from './pages/ReferencePage';
 import ProfilePage from './pages/ProfilePage';
+import CenterSearchPage from './pages/CenterSearchPage';
 import SudokuPage from './pages/games/SudokuPage';
 import ColorMatchPage from './pages/games/ColorMatchPage';
 import SequencePage from './pages/games/SequencePage';
@@ -39,6 +40,7 @@ function App() {
         <Route path="/post/:id" element={<PostDetailPage />} />
         <Route path="/prompt" element={<PromptPage />} />
         <Route path="/guide" element={<GuidePage />} />
+        <Route path="/center-search" element={<CenterSearchPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/reference" element={<ReferencePage />} />
         <Route path="/profile" element={<ProfilePage />} />

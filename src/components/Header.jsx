@@ -14,6 +14,7 @@ export default function Header() {
 
   const navItems = [
     { path: '/', label: '서비스 소개' },
+    { path: '/center-search', label: '치매 센터 찾기' },
     { path: '/guide', label: '이용 가이드' },
     { path: '/reference', label: '데이터 출처' },
     { path: '/privacy', label: '개인정보처리방침', icon: <ShieldCheck className="w-4 h-4" /> }

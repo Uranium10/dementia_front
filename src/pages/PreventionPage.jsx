@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, ChevronLeft, Clock, Gamepad2, BrainCircuit, Puzzle, ArrowRight, Lightbulb } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 
-const CATEGORIES = ['전체', '식습관', '운동', '수면', '두뇌훈련', '생활습관'];
+const CATEGORIES = ['전체', '식습관', '운동', '수면', '두뇌훈련', '생활습관', '연구'];
 
 const GAMES = [
   {
@@ -76,7 +76,7 @@ export default function PreventionPage() {
 
       setFeaturedPosts(featuredData || []);
 
-      let query = supabase.from('posts').select('*').order('published_at', { ascending: false });
+      let query = supabase.from('posts').select('*').order('published_at', { ascending: false }).limit(5);
 
       if (selectedCategory !== '전체') {
         query = query.eq('category', selectedCategory);
