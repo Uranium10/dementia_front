@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Locate, Map } from 'lucide-react';
+import { Search, Locate, Map, X } from 'lucide-react';
 import CenterListItem from './CenterListItem';
 
 export default function CenterSearchPanel({
@@ -13,6 +13,7 @@ export default function CenterSearchPanel({
   onSearchAddress,
   onSearchCurrentLocation,
   onSearchRegion,
+  onClearSearch,
   onChangeRadius,
   onToggleTag,
   selectedCenterId,
@@ -64,7 +65,20 @@ export default function CenterSearchPanel({
             <div className="bg-blue-600 text-white p-1.5 rounded-lg shadow-sm">
               <Map className="w-5 h-5" />
             </div>
-            <h2 className="text-lg font-black text-slate-800 tracking-tight">치매 센터 찾기</h2>
+            <h2 className="text-lg font-black text-slate-800 tracking-tight flex-1">치매 센터 찾기</h2>
+            {searchOrigin && (
+              <button
+                onClick={() => {
+                  setSelectedSido('');
+                  setSelectedSigungu('');
+                  if (onClearSearch) onClearSearch();
+                }}
+                className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1.5 rounded-full transition-colors"
+                title="지역 검색 해제"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
           </div>
           
           <button
@@ -125,7 +139,7 @@ export default function CenterSearchPanel({
             </div>
 
             <div>
-              <span className="text-sm font-bold text-slate-700 block mb-2">프로그램 필터</span>
+              <span className="text-sm font-bold text-slate-700 block mb-2">검색 결과</span>
               <div className="flex flex-wrap gap-1.5">
                 {Object.entries(tagLabels || {}).map(([tagKey, label]) => {
                   const isActive = activeTags.has(tagKey);

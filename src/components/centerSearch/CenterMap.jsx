@@ -36,6 +36,16 @@ export default function CenterMap({
         averageCenter: true, 
         minLevel: 8, 
         gridSize: 60,
+        styles: [{
+          width: '46px',
+          height: '46px',
+          background: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 46 46\'%3e%3cpath d=\'M23 2C11.4 2 2 10.5 2 21c0 5.9 3 11.2 7.7 14.7.4.3.7.8.6 1.3l-1.3 5.4c-.2.7.5 1.3 1.1 1.1l5.8-2c.4-.1.9-.1 1.4.1 1.8.6 3.7.9 5.7.9 11.6 0 21-8.5 21-19S34.6 2 23 2z\' fill=\'%232563eb\'/%3e%3c/svg%3e") no-repeat',
+          color: '#fff',
+          textAlign: 'center',
+          lineHeight: '42px',
+          fontSize: '14px',
+          fontWeight: 'bold'
+        }]
       });
       clustererRef.current = clusterer;
 

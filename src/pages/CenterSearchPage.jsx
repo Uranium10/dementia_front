@@ -84,6 +84,11 @@ export default function CenterSearchPage() {
     }
   }, [data.centers]);
 
+  const clearSearch = useCallback(() => {
+    setSearchOrigin(null);
+    setSelectedCenterId(null);
+  }, []);
+
   // 3. 파생 상태: 거리 계산 및 필터링 (useMemo)
   // 반경 내 결과가 0건이라 전역 최근접 1곳으로 대체한 경우, isRadiusFallback으로 표시해
   // 패널이 "반경 밖입니다" 안내를 별도로 그릴 수 있게 한다.
@@ -189,6 +194,7 @@ export default function CenterSearchPage() {
             onSearchAddress={searchAddress}
             onSearchCurrentLocation={searchCurrentLocation}
             onSearchRegion={searchRegion}
+            onClearSearch={clearSearch}
             onChangeRadius={setRadiusKm}
             onToggleTag={toggleTag}
             selectedCenterId={selectedCenterId}

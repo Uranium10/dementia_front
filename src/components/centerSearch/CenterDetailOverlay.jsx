@@ -7,8 +7,6 @@ import { X, Phone, ExternalLink, Navigation, MapPin } from 'lucide-react';
  */
 export default function CenterDetailOverlay({ center, onClose }) {
   const hasPrograms = center.programs && center.programs.length > 0;
-  const visiblePrograms = hasPrograms ? center.programs.slice(0, 4) : [];
-  const remainingCount = hasPrograms ? center.programs.length - 4 : 0;
 
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-[340px] overflow-hidden flex flex-col font-sans">
@@ -47,16 +45,11 @@ export default function CenterDetailOverlay({ center, onClose }) {
           <div className="flex flex-wrap gap-1.5 mb-2">
             {hasPrograms ? (
               <>
-                {visiblePrograms.map((p, idx) => (
+                {center.programs.map((p, idx) => (
                   <span key={idx} className="inline-block px-2 py-1 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-md whitespace-nowrap">
                     {p}
                   </span>
                 ))}
-                {remainingCount > 0 && (
-                  <span className="inline-block px-2 py-1 bg-slate-200 text-slate-600 text-[11px] font-bold rounded-md whitespace-nowrap">
-                    외 {remainingCount}개
-                  </span>
-                )}
               </>
             ) : (
               <span className="inline-block px-2 py-1 bg-red-50 text-red-500 text-[11px] font-bold rounded-md">
