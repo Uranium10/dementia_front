@@ -187,7 +187,7 @@ export default function PreventionPage() {
         {/* 3. 최신 정보 리스트 */}
         <section className="bg-white rounded-3xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-slate-800">최신 정보</h2>
+            <h2 className="text-xl font-bold text-slate-800">치매 예방 최신 정보</h2>
             <button onClick={() => navigate('/posts')} className="text-blue-600 text-sm font-bold flex items-center hover:underline">
               더보기 <ArrowRight className="w-4 h-4 ml-1" />
             </button>
