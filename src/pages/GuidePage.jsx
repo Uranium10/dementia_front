@@ -23,6 +23,9 @@ export default function GuidePage() {
             <li>하단 입력창에 어르신의 연령과 최근 걱정되는 증상을 입력하세요.</li>
             <li>AI가 제공하는 선택지를 클릭하며 단계별로 정밀한 안내를 받으실 수 있습니다.</li>
           </ul>
+          <Link to="/prompt" className="inline-flex items-center gap-2 px-4 py-2 mt-4 bg-blue-50 text-blue-600 rounded-lg font-bold hover:bg-blue-100 transition-colors">
+            AI 상담 시작하기
+          </Link>
         </section>
 
         <section className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
@@ -40,15 +43,16 @@ export default function GuidePage() {
 
         <section className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
           <div className="flex items-center gap-3 mb-6">
-            <ShieldCheck className="w-8 h-8 text-slate-400" />
-            <h2 className="text-2xl font-bold text-slate-400">3. 인지 능력 예방 가이드 (준비 중)</h2>
+            <ShieldCheck className="w-8 h-8 text-blue-600" />
+            <h2 className="text-2xl font-bold text-slate-800">3. 인지 능력 예방 가이드</h2>
           </div>
-          <p className="text-slate-500 leading-relaxed mb-4">
-            치매는 진단만큼이나 예방이 중요합니다. 다음 업데이트를 통해 일상에서 실천할 수 있는 두뇌 인지 훈련 퍼즐, 운동 영상, 건강 식단 가이드가 추가될 예정입니다.
+          <p className="text-slate-600 leading-relaxed mb-4">
+            치매는 진단만큼이나 예방이 중요합니다. 예방 탭에서는 일상에서 실천할 수 있는 
+            두뇌 인지 훈련 게임과 운동, 수면, 식습관 등 치매 예방 건강 정보를 제공합니다.
           </p>
-          <div className="bg-slate-100 text-slate-500 px-4 py-2 rounded-lg inline-block font-semibold text-sm">
-            다음 프로젝트 범위에서 오픈됩니다
-          </div>
+          <Link to="/prevention" className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg font-bold hover:bg-blue-100 transition-colors">
+            치매 예방 가이드 바로가기
+          </Link>
         </section>
       </main>
 
