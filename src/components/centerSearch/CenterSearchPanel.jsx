@@ -5,6 +5,7 @@ import CenterListItem from './CenterListItem';
 export default function CenterSearchPanel({
   allCenters,
   filteredCenters,
+  isRadiusFallback,
   searchOrigin,
   radiusKm,
   activeTags,
@@ -17,8 +18,6 @@ export default function CenterSearchPanel({
   selectedCenterId,
   onSelectCenter
 }) {
-  const [isPostcodeOpen, setIsPostcodeOpen] = useState(false);
-  
   // 시도 목록 및 선택 상태
   const sidos = useMemo(() => {
     if (!allCenters) return [];
@@ -115,7 +114,7 @@ export default function CenterSearchPanel({
                   <button
                     key={r}
                     onClick={() => onChangeRadius(r)}
-                    className={`px-3 py-1 text-xs font-bold rounded-md min-w-[44px] min-h-[32px] transition-colors ${
+                    className={`flex items-center justify-center px-3 text-xs font-bold rounded-md min-w-[44px] min-h-[44px] transition-colors ${
                       radiusKm === r ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
                     }`}
                   >
@@ -134,9 +133,9 @@ export default function CenterSearchPanel({
                     <button
                       key={tagKey}
                       onClick={() => onToggleTag(tagKey)}
-                      className={`px-2.5 py-1 text-[11px] font-bold rounded-full border transition-colors min-h-[28px] ${
-                        isActive 
-                          ? 'bg-blue-50 text-blue-700 border-blue-200' 
+                      className={`flex items-center justify-center px-3 text-[11px] font-bold rounded-full border transition-colors min-h-[44px] ${
+                        isActive
+                          ? 'bg-blue-50 text-blue-700 border-blue-200'
                           : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
                       }`}
                     >
@@ -158,9 +157,15 @@ export default function CenterSearchPanel({
             </div>
           ) : filteredCenters.length > 0 ? (
             <>
-              <div className="text-sm font-bold text-slate-600 mb-3 pl-1">
-                결과 <span className="text-blue-600">{filteredCenters.length}</span>곳
-              </div>
+              {isRadiusFallback ? (
+                <div className="mb-3 px-3.5 py-3 bg-amber-50 border border-amber-200 rounded-xl text-sm font-bold text-amber-800 leading-relaxed">
+                  반경 {radiusKm}km 내에는 센터가 없어, 가장 가까운 센터를 보여드립니다.
+                </div>
+              ) : (
+                <div className="text-sm font-bold text-slate-600 mb-3 pl-1">
+                  결과 <span className="text-blue-600">{filteredCenters.length}</span>곳
+                </div>
+              )}
               {filteredCenters.map(center => (
                 <CenterListItem
                   key={center.id}

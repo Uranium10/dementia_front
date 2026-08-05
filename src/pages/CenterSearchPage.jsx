@@ -35,7 +35,12 @@ export default function CenterSearchPage() {
 
   // 2. Geocoder 등 검색 유틸리티 (메모이제이션 불필요. 매번 사용할 때 호출)
   const searchAddress = useCallback((addrStr) => {
-    if (!window.kakao || !window.kakao.maps) return;
+    // 카카오 SDK가 로드되지 않은 상태(sdkError)에서도 다음 우편번호 팝업은 열리므로,
+    // 좌표 변환 단계에서 안내 없이 조용히 실패하지 않도록 사용자에게 알려준다.
+    if (!window.kakao || !window.kakao.maps) {
+      alert('지도 서비스를 사용할 수 없어 주소를 좌표로 변환할 수 없습니다. 아래 지역 선택으로 검색해주세요.');
+      return;
+    }
     const geocoder = new kakao.maps.services.Geocoder();
     geocoder.addressSearch(addrStr, (result, status) => {
       if (status === kakao.maps.services.Status.OK) {
@@ -80,7 +85,9 @@ export default function CenterSearchPage() {
   }, [data.centers]);
 
   // 3. 파생 상태: 거리 계산 및 필터링 (useMemo)
-  const nearbyCenters = useMemo(() => {
+  // 반경 내 결과가 0건이라 전역 최근접 1곳으로 대체한 경우, isRadiusFallback으로 표시해
+  // 패널이 "반경 밖입니다" 안내를 별도로 그릴 수 있게 한다.
+  const { list: nearbyCenters, isFallback: isRadiusFallback } = useMemo(() => {
     let result = data.centers;
 
     // 3-1. 태그 필터 (체크된 태그를 하나라도 가지면 통과 = OR 조건)
@@ -97,21 +104,18 @@ export default function CenterSearchPage() {
         ...c,
         distanceKm: haversineKm(searchOrigin.lat, searchOrigin.lng, c.lat, c.lng)
       }));
-      
+
       const withinRadius = withDistance.filter(c => c.distanceKm <= radiusKm);
       withinRadius.sort((a, b) => a.distanceKm - b.distanceKm);
 
-      // 반경 내 결과가 0개면 가장 가까운 1개를 반환
+      // 반경 내 결과가 0개면(=태그 필터로 전멸한 게 아니라면) 가장 가까운 1개를 반환
       if (withinRadius.length === 0 && withDistance.length > 0) {
         withDistance.sort((a, b) => a.distanceKm - b.distanceKm);
-        const closest = withDistance[0];
-        // alert은 부작용이므로 조심스럽게 사용 (여기서는 렌더링 중이므로 안됨, 패널에서 처리하거나 UI로 표시)
-        // 하지만 가이드에서는 안내를 권장하므로, UI에서 처리하도록 1개만 리턴
-        return [closest]; 
+        return { list: [withDistance[0]], isFallback: true };
       }
-      return withinRadius;
+      return { list: withinRadius, isFallback: false };
     }
-    return result; // 초기 검색 전에는 전체(클러스터용) 혹은 필터된 전체 반환
+    return { list: result, isFallback: false }; // 초기 검색 전에는 전체(클러스터용) 혹은 필터된 전체 반환
   }, [data.centers, searchOrigin, radiusKm, activeTags]);
 
   const toggleTag = useCallback((tag) => {
@@ -139,32 +143,45 @@ export default function CenterSearchPage() {
         </div>
       )}
 
-      {sdkError && (
-        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-100/90 backdrop-blur-md">
-          <p className="text-slate-700 font-bold mb-2">지도를 불러오지 못했습니다.</p>
-          <p className="text-sm text-slate-500 mb-4">새로고침 하거나 잠시 후 다시 시도해주세요.</p>
-        </div>
-      )}
-
-      {!sdkError && !loaded && status === 'ready' && (
-        <div className="absolute inset-0 z-0 flex flex-col items-center justify-center bg-slate-100">
-          <div className="w-8 h-8 border-4 border-slate-300 border-t-slate-500 rounded-full animate-spin mb-2"></div>
-          <p className="text-slate-500 text-sm font-medium">지도 로딩 중...</p>
-        </div>
-      )}
-
-      {loaded && (
+      {/*
+        status === 'ready' 이후부터는 지도(SDK)와 좌측 패널(centers.json)을 별개로 취급한다.
+        지도 SDK가 실패해도 패널은 항상 렌더링해 목록 검색이 계속 동작하게 한다
+        (지도 없이도 검색·필터·리스트는 JSON만으로 완전히 동작한다).
+      */}
+      {status === 'ready' && (
         <>
-          <CenterMap 
-            centers={nearbyCenters}
-            searchOrigin={searchOrigin}
-            radiusKm={radiusKm}
-            selectedCenterId={selectedCenterId}
-            onSelectCenter={setSelectedCenterId}
-          />
+          {loaded ? (
+            <CenterMap
+              centers={nearbyCenters}
+              searchOrigin={searchOrigin}
+              radiusKm={radiusKm}
+              selectedCenterId={selectedCenterId}
+              onSelectCenter={setSelectedCenterId}
+            />
+          ) : sdkError ? (
+            <div className="absolute inset-0 z-0 flex flex-col items-center justify-center bg-slate-100 px-6 text-center">
+              <p className="text-slate-700 font-bold mb-2">지도를 불러오지 못했습니다.</p>
+              <p className="text-sm text-slate-500 mb-5">
+                지도 없이도 아래 목록에서 센터를 검색·확인할 수 있습니다.
+              </p>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-sm hover:bg-blue-700 transition-colors"
+              >
+                지도 다시 시도
+              </button>
+            </div>
+          ) : (
+            <div className="absolute inset-0 z-0 flex flex-col items-center justify-center bg-slate-100">
+              <div className="w-8 h-8 border-4 border-slate-300 border-t-slate-500 rounded-full animate-spin mb-2"></div>
+              <p className="text-slate-500 text-sm font-medium">지도 로딩 중...</p>
+            </div>
+          )}
+
           <CenterSearchPanel
             allCenters={data.centers}
             filteredCenters={nearbyCenters}
+            isRadiusFallback={isRadiusFallback}
             searchOrigin={searchOrigin}
             radiusKm={radiusKm}
             activeTags={activeTags}
