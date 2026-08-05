@@ -111,7 +111,21 @@ export default function PostDetailPage() {
 
           {/* 마크다운 본문 렌더링 */}
           <div className="prose prose-lg prose-slate max-w-none mb-12 prose-headings:text-slate-800 prose-a:text-blue-600 hover:prose-a:text-blue-700">
-            <ReactMarkdown rehypePlugins={[rehypeRaw]}>{post.content}</ReactMarkdown>
+            <ReactMarkdown 
+              rehypePlugins={[rehypeRaw]}
+              components={{
+                img: ({ node, ...props }) => (
+                  <img 
+                    {...props} 
+                    referrerPolicy="no-referrer"
+                    loading="lazy"
+                    style={{ maxWidth: '100%', height: 'auto', ...props.style }}
+                  />
+                )
+              }}
+            >
+              {post.content}
+            </ReactMarkdown>
           </div>
 
           {/* 출처 정보 */}
