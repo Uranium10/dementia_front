@@ -23,14 +23,14 @@ export default function CenterListItem({ center, isSelected, onSelect }) {
         }
       }}
       aria-label={`${center.name} 센터 정보`}
-      className={`w-full text-left p-5 rounded-2xl transition-all border block mb-3 min-h-[88px] ${
+      className={`group w-full text-left p-5 rounded-2xl transition-all border block mb-3 min-h-[88px] ${
         isSelected
           ? 'bg-blue-50 border-blue-200 shadow-md ring-2 ring-blue-600/20'
           : 'bg-white border-slate-100 shadow-sm hover:shadow-md hover:border-blue-100 hover:bg-slate-50'
       }`}
     >
       <div className="flex justify-between items-start mb-2 gap-2">
-        <h3 className="text-[17px] font-bold text-slate-800 leading-tight flex-1">
+        <h3 className="text-[17px] font-bold text-blue-600 group-hover:underline leading-tight flex-1">
           {center.name}
         </h3>
         {center.distanceKm !== undefined && (

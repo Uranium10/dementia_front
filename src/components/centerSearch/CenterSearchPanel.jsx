@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Locate, Map, X } from 'lucide-react';
+import { Search, Locate, Map, X, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
 import CenterListItem from './CenterListItem';
 
 export default function CenterSearchPanel({
@@ -19,6 +19,8 @@ export default function CenterSearchPanel({
   selectedCenterId,
   onSelectCenter
 }) {
+  const [isPanelOpen, setIsPanelOpen] = useState(true);
+
   // 시도 목록 및 선택 상태
   const sidos = useMemo(() => {
     if (!allCenters) return [];
@@ -56,8 +58,25 @@ export default function CenterSearchPanel({
   };
 
   return (
-    <div className="absolute top-0 md:top-6 left-0 md:left-6 w-full md:w-[380px] h-[45%] md:h-[calc(100%-3rem)] flex flex-col z-20 transition-all">
-      <div className="glass-panel flex-1 rounded-none md:rounded-3xl shadow-lg border border-white/40 overflow-hidden flex flex-col bg-white/85 backdrop-blur-xl">
+    <>
+      <div 
+        className={`absolute w-full md:w-[380px] flex flex-col z-20 transition-all duration-300 ease-in-out
+          bottom-0 md:bottom-auto md:top-6 
+          h-[45%] md:h-[calc(100%-3rem)]
+          ${isPanelOpen ? 'translate-y-0 md:translate-y-0 md:left-6' : 'translate-y-[calc(100%-40px)] md:translate-y-0 md:-left-[380px]'}
+        `}
+      >
+        <div className="glass-panel flex-1 rounded-t-3xl md:rounded-3xl shadow-lg border border-white/40 overflow-hidden flex flex-col bg-white/85 backdrop-blur-xl relative">
+          
+          {/* 모바일용 상단 토글 핸들 (40px만 노출) */}
+          <button 
+            onClick={() => setIsPanelOpen(!isPanelOpen)}
+            className="md:hidden w-full h-[40px] flex items-center justify-center shrink-0 bg-slate-50/80 border-b border-slate-200/50"
+            aria-label={isPanelOpen ? '패널 내리기' : '패널 올리기'}
+          >
+            {isPanelOpen ? <ChevronDown className="text-slate-400" /> : <ChevronUp className="text-slate-400" />}
+            <span className="text-xs font-bold text-slate-500 ml-1">검색 패널</span>
+          </button>
         
         {/* 상단 검색 폼 */}
         <div className="p-5 border-b border-slate-200/50 shrink-0">
@@ -73,10 +92,11 @@ export default function CenterSearchPanel({
                   setSelectedSigungu('');
                   if (onClearSearch) onClearSearch();
                 }}
-                className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1.5 rounded-full transition-colors"
-                title="지역 검색 해제"
+                className="text-slate-500 bg-slate-100 hover:text-slate-700 hover:bg-slate-200 px-3 py-1.5 rounded-lg font-bold text-sm transition-colors flex items-center gap-1"
+                title="지역 검색 취소"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
+                검색 취소
               </button>
             )}
           </div>
@@ -139,7 +159,7 @@ export default function CenterSearchPanel({
             </div>
 
             <div>
-              <span className="text-sm font-bold text-slate-700 block mb-2">검색 결과</span>
+              <span className="text-sm font-bold text-slate-700 block mb-2">프로그램 필터</span>
               <div className="flex flex-wrap gap-1.5">
                 {Object.entries(tagLabels || {}).map(([tagKey, label]) => {
                   const isActive = activeTags.has(tagKey);
@@ -164,6 +184,11 @@ export default function CenterSearchPanel({
 
         {/* 결과 리스트 */}
         <div className="flex-1 overflow-y-auto p-5 bg-slate-50/50">
+          <div className="text-sm font-black text-slate-800 mb-3 flex items-center gap-2">
+            <span className="w-1.5 h-4 bg-blue-500 rounded-full inline-block"></span>
+            검색 결과
+          </div>
+          
           {!searchOrigin ? (
             <div className="text-center py-10 text-slate-400">
               <Map className="w-10 h-10 mx-auto mb-3 opacity-50" />
@@ -176,8 +201,8 @@ export default function CenterSearchPanel({
                   반경 {radiusKm}km 내에는 센터가 없어, 가장 가까운 센터를 보여드립니다.
                 </div>
               ) : (
-                <div className="text-sm font-bold text-slate-600 mb-3 pl-1">
-                  결과 <span className="text-blue-600">{filteredCenters.length}</span>곳
+                <div className="text-sm font-bold text-slate-600 mb-3 pl-2">
+                  <span className="text-blue-600">{filteredCenters.length}</span>곳
                 </div>
               )}
               {filteredCenters.map(center => (
@@ -196,6 +221,18 @@ export default function CenterSearchPanel({
           )}
         </div>
       </div>
+      
+      {/* 데스크톱용 우측 토글 버튼 */}
+      <button 
+        onClick={() => setIsPanelOpen(!isPanelOpen)}
+        className={`hidden md:flex absolute top-1/2 -translate-y-1/2 w-8 h-16 bg-white/85 backdrop-blur-xl border border-white/40 border-l-0 rounded-r-xl shadow-lg items-center justify-center text-slate-500 hover:text-blue-600 transition-all duration-300 z-10 ${
+          isPanelOpen ? 'left-full' : '-right-8'
+        }`}
+        aria-label={isPanelOpen ? '검색 패널 숨기기' : '검색 패널 나타내기'}
+      >
+        {isPanelOpen ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+      </button>
     </div>
+    </>
   );
 }
