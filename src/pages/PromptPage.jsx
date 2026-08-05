@@ -1,7 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Send, User, Bot, Brain, ChevronRight, Square } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { supabase } from '../lib/supabaseClient';
+
+/**
+ * AI 답변 텍스트를 마크다운으로 렌더링하기 전에, 단일 개행(\n)을 마크다운 하드 브레이크로
+ * 바꿔준다. 챗봇 응답은 문단 구분을 \n\n이 아니라 \n 하나로 하는 경우가 많은데,
+ * 표준 마크다운은 단일 개행을 무시하고 이어붙이기 때문에 줄바꿈이 사라져 보이는 걸 방지한다.
+ * (줄 끝에 공백 2개 + 개행 = CommonMark 하드 브레이크)
+ */
+function toMarkdownWithLineBreaks(text) {
+  return (text || '').replace(/\n/g, '  \n');
+}
 
 const CHATBOT_SERVER = import.meta.env.VITE_CHATBOT_SERVER || 'http://localhost:8000';
 /**
@@ -204,11 +215,19 @@ export default function PromptPage() {
               {/* 말풍선 컨테이너 */}
               <div className="flex flex-col gap-3 max-w-[85%]">
                 {/* 텍스트 말풍선 */}
-                <div className={`p-4 rounded-2xl shadow-sm border leading-relaxed whitespace-pre-wrap ${msg.sender === 'user'
+                <div className={`p-4 rounded-2xl shadow-sm border leading-relaxed ${msg.sender === 'user'
                   ? 'bg-indigo-600 text-white rounded-tr-sm border-indigo-700'
                   : 'bg-white text-slate-700 rounded-tl-sm border-slate-200'
                   }`}>
-                  {msg.text}
+                  {msg.sender === 'ai' ? (
+                    // AI 답변은 마크다운(굵게, 목록, 링크 등)을 실제 서식으로 렌더링한다.
+                    // rehypeRaw는 쓰지 않아 원본 HTML 태그는 무시되고 순수 마크다운만 반영된다(XSS 방지).
+                    <div className="prose prose-sm prose-slate max-w-none prose-p:my-2 first:prose-p:mt-0 last:prose-p:mb-0 prose-headings:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0 prose-a:text-blue-600 prose-strong:text-slate-800">
+                      <ReactMarkdown>{toMarkdownWithLineBreaks(msg.text)}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <div className="whitespace-pre-wrap">{msg.text}</div>
+                  )}
 
                   {/* Sources 렌더링 (AI 메시지이고 sources가 있을 때만) */}
                   {msg.sender === 'ai' && msg.sources && msg.sources.length > 0 && (
