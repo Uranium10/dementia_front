@@ -277,21 +277,7 @@ export default function PreventionPage() {
           </div>
         </section>
 
-        {/* 5. 배너 */}
-        <section className="bg-blue-50 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="bg-white p-3 rounded-full text-blue-500 shadow-sm">
-              <Lightbulb className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-800">작은 습관이 큰 변화를 만듭니다</h3>
-              <p className="text-sm text-slate-600 mt-1">매일 10분의 실천으로 건강한 두뇌를 지켜주세요.</p>
-            </div>
-          </div>
-          <button className="bg-blue-600 text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-blue-700 transition-colors flex items-center gap-2 whitespace-nowrap shadow-md shadow-blue-200">
-            오늘의 미션 확인하기 <ChevronRight className="w-4 h-4" />
-          </button>
-        </section>
+
 
       </div>
     </div>
