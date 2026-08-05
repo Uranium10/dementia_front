@@ -37,12 +37,12 @@ export default function CenterMap({
         minLevel: 8, 
         gridSize: 60,
         styles: [{
-          width: '46px',
+          width: '50px',
           height: '46px',
-          background: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 46 46\'%3e%3cpath d=\'M23 2C11.4 2 2 10.5 2 21c0 5.9 3 11.2 7.7 14.7.4.3.7.8.6 1.3l-1.3 5.4c-.2.7.5 1.3 1.1 1.1l5.8-2c.4-.1.9-.1 1.4.1 1.8.6 3.7.9 5.7.9 11.6 0 21-8.5 21-19S34.6 2 23 2z\' fill=\'%232563eb\'/%3e%3c/svg%3e") no-repeat',
-          color: '#fff',
+          background: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 50 46\'%3e%3cdefs%3e%3clinearGradient id=\'g\' x1=\'0\' y1=\'0\' x2=\'0\' y2=\'1\'%3e%3cstop offset=\'0%25\' stop-color=\'%23ffffff\'/%3e%3cstop offset=\'100%25\' stop-color=\'%23f1f5f9\'/%3e%3c/linearGradient%3e%3cfilter id=\'s\'%3e%3cfeDropShadow dx=\'0\' dy=\'1\' stdDeviation=\'1.5\' flood-opacity=\'0.2\'/%3e%3c/filter%3e%3c/defs%3e%3cpath d=\'M7 3C4.2 3 2 5.2 2 8v18c0 2.8 2.2 5 5 5h13l5 7 5-7h13c2.8 0 5-2.2 5-5V8c0-2.8-2.2-5-5-5H7z\' fill=\'url(%23g)\' stroke=\'%232563eb\' stroke-width=\'1.5\' filter=\'url(%23s)\'/%3e%3c/svg%3e") no-repeat center',
+          color: '#2563eb',
           textAlign: 'center',
-          lineHeight: '42px',
+          lineHeight: '40px',
           fontSize: '14px',
           fontWeight: 'bold'
         }]
