@@ -110,7 +110,7 @@ export default function PostDetailPage() {
           </div>
 
           {/* 마크다운 본문 렌더링 */}
-          <div className="prose prose-slate prose-img:rounded-xl max-w-none mb-12 prose-headings:text-slate-800 prose-a:text-blue-600 hover:prose-a:text-blue-700 prose-td:align-top [&_td>*:first-child]:mt-0 [&_td>*:last-child]:mb-0 [&_td]:p-4">
+          <div className="prose prose-slate prose-img:rounded-xl max-w-none mb-12 prose-headings:text-slate-800 prose-a:text-blue-600 hover:prose-a:text-blue-700">
             <ReactMarkdown 
               rehypePlugins={[rehypeRaw]}
               components={{
@@ -121,6 +121,14 @@ export default function PostDetailPage() {
                     loading="lazy"
                     style={{ maxWidth: '100%', height: 'auto', ...props.style }}
                   />
+                ),
+                table: ({ node, ...props }) => (
+                  <div className="not-prose w-full overflow-x-auto">
+                    <table {...props} style={{ width: '100%', ...props.style }} />
+                  </div>
+                ),
+                div: ({ node, ...props }) => (
+                  <div className="not-prose" {...props} />
                 )
               }}
             >
