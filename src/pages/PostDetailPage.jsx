@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Clock, ExternalLink, Calendar } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 import { supabase } from '../lib/supabaseClient';
 
 export default function PostDetailPage() {
@@ -110,7 +111,7 @@ export default function PostDetailPage() {
 
           {/* 마크다운 본문 렌더링 */}
           <div className="prose prose-lg prose-slate max-w-none mb-12 prose-headings:text-slate-800 prose-a:text-blue-600 hover:prose-a:text-blue-700">
-            <ReactMarkdown>{post.content}</ReactMarkdown>
+            <ReactMarkdown rehypePlugins={[rehypeRaw]}>{post.content}</ReactMarkdown>
           </div>
 
           {/* 출처 정보 */}
