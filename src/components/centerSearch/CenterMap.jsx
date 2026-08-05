@@ -42,8 +42,8 @@ export default function CenterMap({
           background: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 50 46\'%3e%3cdefs%3e%3clinearGradient id=\'g\' x1=\'0\' y1=\'0\' x2=\'0\' y2=\'1\'%3e%3cstop offset=\'0%25\' stop-color=\'%23ffffff\'/%3e%3cstop offset=\'100%25\' stop-color=\'%23f1f5f9\'/%3e%3c/linearGradient%3e%3cfilter id=\'s\'%3e%3cfeDropShadow dx=\'0\' dy=\'1\' stdDeviation=\'1.5\' flood-opacity=\'0.2\'/%3e%3c/filter%3e%3c/defs%3e%3cpath d=\'M7 3C4.2 3 2 5.2 2 8v18c0 2.8 2.2 5 5 5h13l5 7 5-7h13c2.8 0 5-2.2 5-5V8c0-2.8-2.2-5-5-5H7z\' fill=\'url(%23g)\' stroke=\'%232563eb\' stroke-width=\'1.5\' filter=\'url(%23s)\'/%3e%3c/svg%3e") no-repeat center',
           color: '#2563eb',
           textAlign: 'center',
-          lineHeight: '40px',
-          fontSize: '14px',
+          lineHeight: '33px',
+          fontSize: '15px',
           fontWeight: 'bold'
         }]
       });

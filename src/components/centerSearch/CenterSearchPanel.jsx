@@ -159,7 +159,6 @@ export default function CenterSearchPanel({
             </div>
 
             <div>
-              <span className="text-sm font-bold text-slate-700 block mb-2">프로그램 필터</span>
               <div className="flex flex-wrap gap-1.5">
                 {Object.entries(tagLabels || {}).map(([tagKey, label]) => {
                   const isActive = activeTags.has(tagKey);
