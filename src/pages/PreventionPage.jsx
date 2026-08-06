@@ -160,14 +160,14 @@ export default function PreventionPage() {
                 <>
                   <button
                     onClick={prevFeatured}
-                    className="absolute left-2 md:left-4 top-[25%] md:top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-white hover:scale-105 transition-all z-10 md:opacity-0 md:group-hover:opacity-100"
+                    className="absolute left-2 md:left-4 top-[25%] md:top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-white hover:scale-105 transition-all z-10 opacity-70 hover:opacity-100"
                     aria-label="이전 추천글"
                   >
                     <ChevronLeft className="w-6 h-6" />
                   </button>
                   <button
                     onClick={nextFeatured}
-                    className="absolute right-2 md:right-4 top-[25%] md:top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-white hover:scale-105 transition-all z-10 md:opacity-0 md:group-hover:opacity-100"
+                    className="absolute right-2 md:right-4 top-[25%] md:top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-white hover:scale-105 transition-all z-10 opacity-70 hover:opacity-100"
                     aria-label="다음 추천글"
                   >
                     <ChevronRight className="w-6 h-6" />
