@@ -84,6 +84,7 @@ export default function useDailyCheckin(session) {
           tone: data.tone,
           concern_note: data.concern_note,
           observations: data.observations,
+          recommend_center_search: data.recommend_center_search,
           // 방금 막 완료된 정확한 시각(브라우저 로컬 타임존). 서버가 주는 checkin_date는
           // 날짜만 있고, 그마저 UTC 기준이면 자정 근처 하루 어긋날 수 있어(game_scores에서
           // 이미 겪은 문제) 여기선 날짜 계산 없이 순수 로컬 시각 표시용으로만 쓴다.

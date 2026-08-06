@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useDailyCheckin from '../../hooks/useDailyCheckin';
 import DailyCheckinModal from './DailyCheckinModal';
-import { MessageCircle, CheckCircle2 } from 'lucide-react';
+import { MessageCircle, CheckCircle2, MapPin, ChevronRight } from 'lucide-react';
 
 // 톤 매핑 표 (가이드 5-3절)
 const TONE_MAP = {
@@ -68,34 +68,55 @@ export default function DailyCheckinCard({ session }) {
     const completedTime = formatCompletedTime(todayCheckin.completedAt);
 
     content = (
-      <section className="bg-white rounded-3xl shadow-sm p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-4 w-full md:w-auto">
-          <div className="bg-green-500 p-2 rounded-xl text-white shadow-sm shrink-0">
-            <CheckCircle2 className="w-6 h-6" />
-          </div>
-          <div className="flex-1">
-            <div className="flex flex-col md:flex-row md:items-center gap-2">
-              <h3 className="text-lg font-bold text-slate-700 flex items-center gap-2">
-                오늘의 체크를 완료했어요!
-              </h3>
-              <span className={`inline-flex px-2 py-0.5 rounded font-bold text-[11px] ${toneInfo.colors} w-fit`}>
-                {toneInfo.label}
-              </span>
+      <section className="bg-white rounded-3xl shadow-sm p-6 flex flex-col gap-4">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="bg-green-500 p-2 rounded-xl text-white shadow-sm shrink-0">
+              <CheckCircle2 className="w-6 h-6" />
             </div>
+            <div className="flex-1">
+              <div className="flex flex-col md:flex-row md:items-center gap-2">
+                <h3 className="text-lg font-bold text-slate-700 flex items-center gap-2">
+                  오늘의 체크를 완료했어요!
+                </h3>
+                <span className={`inline-flex px-2 py-0.5 rounded font-bold text-[11px] ${toneInfo.colors} w-fit`}>
+                  {toneInfo.label}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 shrink-0 ml-auto md:ml-0 mt-4 md:mt-0">
+            <div className="text-xs text-slate-400 font-medium">
+              {completedTime ? `오늘 ${completedTime} 완료` : '오늘 완료'}
+            </div>
+            <button
+              onClick={() => navigate('/daily-checkin-report')}
+              className="text-blue-600 font-bold text-sm hover:underline"
+            >
+              자세히 보기
+            </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 shrink-0 ml-auto md:ml-0 mt-4 md:mt-0">
-          <div className="text-xs text-slate-400 font-medium">
-            {completedTime ? `오늘 ${completedTime} 완료` : '오늘 완료'}
-          </div>
-          <button 
-            onClick={() => navigate('/daily-checkin-report')}
-            className="text-blue-600 font-bold text-sm hover:underline"
+        {/* 정말 필요하다고 AI가 판단한 경우에만 노출(daily_summary.py 9번 규칙) */}
+        {todayCheckin.recommend_center_search && (
+          <button
+            onClick={() => navigate('/center-search')}
+            className="w-full flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 text-left hover:bg-amber-100 transition-colors"
           >
-            자세히 보기
+            <div className="flex items-center gap-3">
+              <div className="bg-amber-100 text-amber-700 p-2 rounded-xl shrink-0">
+                <MapPin className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="font-bold text-amber-800 text-sm">가까운 치매안심센터를 찾아보시는 걸 권해드려요</p>
+                <p className="text-xs text-amber-700 mt-0.5">무료 조기검진·상담 프로그램을 받아보실 수 있어요</p>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-amber-500 shrink-0" />
           </button>
-        </div>
+        )}
       </section>
     );
   } else {

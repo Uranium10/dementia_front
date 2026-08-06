@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Bot, User, CheckCircle2 } from 'lucide-react';
+import { X, Send, Bot, User, CheckCircle2, MapPin, ChevronRight } from 'lucide-react';
 
 const INITIAL_GREETING = {
   role: 'assistant',
@@ -12,10 +13,12 @@ const INITIAL_GREETING = {
 // 그래서 "매일 초기화"는 언마운트 시점이 아니라, 매번 열리는 시점(isOpen: false -> true)에
 // 대화 state를 직접 리셋하는 방식으로 구현한다.
 export default function DailyCheckinModal({ isOpen, onClose, sendTurn }) {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([{ id: 'greeting', ...INITIAL_GREETING }]);
   const [inputText, setInputText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [recommendCenterSearch, setRecommendCenterSearch] = useState(false);
 
   const messagesEndRef = useRef(null);
 
@@ -26,6 +29,7 @@ export default function DailyCheckinModal({ isOpen, onClose, sendTurn }) {
       setInputText('');
       setIsSubmitting(false);
       setIsCompleted(false);
+      setRecommendCenterSearch(false);
     }
   }, [isOpen]);
 
@@ -69,9 +73,16 @@ export default function DailyCheckinModal({ isOpen, onClose, sendTurn }) {
       
       if (response.type === 'complete') {
         setIsCompleted(true);
-        setTimeout(() => {
-          onClose(); // 1.2초 뒤 자동 종료
-        }, 1200);
+        if (response.recommend_center_search) {
+          // 센터 방문을 권할 만큼 중요한 경우엔 1.2초 만에 자동으로 닫아버리면
+          // 누를 틈도 없이 사라진다. 이때는 자동 종료를 생략하고, 사용자가
+          // 링크를 누르거나(페이지 이동으로 자연히 닫힘) 직접 닫을 때까지 둔다.
+          setRecommendCenterSearch(true);
+        } else {
+          setTimeout(() => {
+            onClose(); // 1.2초 뒤 자동 종료
+          }, 1200);
+        }
       } else if (response.type === 'turn' && response.reply) {
         setMessages(prev => [...prev, { id: Date.now(), role: 'assistant', content: response.reply }]);
         
@@ -142,6 +153,27 @@ export default function DailyCheckinModal({ isOpen, onClose, sendTurn }) {
                   <CheckCircle2 className="w-16 h-16 text-green-500" />
                 </motion.div>
                 <p className="text-xl font-bold text-slate-800">오늘의 체크가 완료됐어요</p>
+
+                {recommendCenterSearch && (
+                  <motion.button
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    onClick={() => navigate('/center-search')}
+                    className="w-[85%] flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 text-left hover:bg-amber-100 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="bg-amber-100 text-amber-700 p-2 rounded-xl shrink-0">
+                        <MapPin className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-amber-800 text-sm">가까운 치매안심센터를 찾아보시는 걸 권해드려요</p>
+                        <p className="text-xs text-amber-700 mt-0.5">무료 조기검진·상담을 받아보실 수 있어요</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-amber-500 shrink-0" />
+                  </motion.button>
+                )}
               </motion.div>
             ) : null}
 

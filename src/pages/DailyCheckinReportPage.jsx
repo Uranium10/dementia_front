@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import { ArrowLeft, UserCircle2, Calendar, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, UserCircle2, Calendar, CheckCircle2, MapPin, ChevronRight } from 'lucide-react';
 
 // 톤 매핑 정보 (실제 daily_checkins.tone 값 기준 — DailyCheckinCard.jsx와 동일 4개)
 // 이전엔 need_attention/need_help/urgent라는, 실제로 저장되지 않는 이름을 써서
@@ -153,6 +153,19 @@ export default function DailyCheckinReportPage() {
                           <span className="font-bold mr-1">⚠️ 주의사항:</span>
                           {checkin.concern_note}
                         </div>
+                      )}
+
+                      {checkin.recommend_center_search && (
+                        <button
+                          onClick={() => navigate('/center-search')}
+                          className="mt-3 w-full flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-left hover:bg-amber-100 transition-colors"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <MapPin className="w-4 h-4 text-amber-700 shrink-0" />
+                            <span className="font-bold text-amber-800 text-sm">가까운 치매안심센터 찾아보기</span>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-amber-500 shrink-0" />
+                        </button>
                       )}
                     </div>
                   );
