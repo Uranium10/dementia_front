@@ -3,12 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { ArrowLeft, UserCircle2, Calendar, CheckCircle2 } from 'lucide-react';
 
-// 톤 매핑 정보 (DailyCheckinCard와 동일)
+// 톤 매핑 정보 (실제 daily_checkins.tone 값 기준 — DailyCheckinCard.jsx와 동일 4개)
+// 이전엔 need_attention/need_help/urgent라는, 실제로 저장되지 않는 이름을 써서
+// neutral 외의 모든 tone(reassure/observe/suggest_consult)이 매핑 실패로
+// 전부 "특별한 이슈 없음"으로 표시되던 버그가 있었다.
 const TONE_MAP = {
-  neutral: { label: '특별한 이슈 없음', colors: 'bg-green-100 text-green-700' },
-  need_attention: { label: '관찰 권함', colors: 'bg-amber-100 text-amber-700' },
-  need_help: { label: '개입 필요 의심', colors: 'bg-orange-100 text-orange-700' },
-  urgent: { label: '전문가 상담 권유', colors: 'bg-red-100 text-red-700' },
+  reassure: { label: '안심', colors: 'bg-green-100 text-green-700' },
+  neutral: { label: '특별한 이슈 없음', colors: 'bg-slate-100 text-slate-600' },
+  observe: { label: '관찰 권함', colors: 'bg-amber-100 text-amber-700' },
+  suggest_consult: { label: '전문가 상담 권유', colors: 'bg-red-100 text-red-700' },
 };
 
 export default function DailyCheckinReportPage() {
