@@ -127,93 +127,97 @@ export default function GameStatsPage() {
     return allScores.filter(score => score.game_type === selectedGame);
   }, [allScores, selectedGame]);
 
-  // 주요 통계 요약 (총 플레이 횟수, 최고 기록)
-  const statsSummary = useMemo(() => {
-    const totalPlayCount = filteredScores.length;
-    if (totalPlayCount === 0) {
-      return { totalPlayCount, bestRecord: null };
-    }
+  // 난이도명 매핑 헬퍼
+  const getDifficultyLabel = (diff) => {
+    if (diff === 'easy') return '쉬움';
+    if (diff === 'normal' || diff === 'medium') return '보통';
+    if (diff === 'hard') return '어려움';
+    return '기본';
+  };
 
-    const isTimeType = currentGame.type === 'time';
+  const getDifficultyOrder = (diff) => {
+    if (diff === 'easy') return 1;
+    if (diff === 'normal' || diff === 'medium') return 2;
+    if (diff === 'hard') return 3;
+    return 4; // 기본
+  };
 
-    if (isTimeType) {
-      // 스도쿠의 경우 소요 시간 중 최소값(최단 완료 시간) 찾기
-      let minDuration = Infinity;
-      filteredScores.forEach(row => {
-        const d = row.detail?.duration_sec;
-        if (d !== undefined && d !== null) {
-          if (d < minDuration) minDuration = d;
-        }
-      });
-      return {
-        totalPlayCount,
-        bestRecord: minDuration === Infinity ? null : minDuration
-      };
-    } else {
-      // 점수 기반 게임의 경우 최고 점수(최대값) 찾기
-      let maxScore = -Infinity;
-      filteredScores.forEach(row => {
-        if (row.score !== undefined && row.score !== null) {
-          if (row.score > maxScore) maxScore = row.score;
-        }
-      });
-      return {
-        totalPlayCount,
-        bestRecord: maxScore === -Infinity ? null : maxScore
-      };
-    }
-  }, [filteredScores, currentGame]);
-
-  // 차트 렌더링에 적합한 데이터 포맷 가공 (하루에 여러번 했을 때의 대표값 적용)
-  const chartData = useMemo(() => {
-    const dailyBest = {};
-    const isTimeType = currentGame.type === 'time';
-
+  const groupedStats = useMemo(() => {
+    // 1. 데이터를 난이도(mappedDiff) 기준으로 그룹화
+    const groups = {}; 
+    
     filteredScores.forEach(row => {
-      // 만약 DB의 play_date가 ISO 타임스탬프(UTC)로 온다면 로컬 시간으로 변환
-      let date = row.play_date;
-      if (date && date.includes('T')) {
-        date = getLocalDateString(new Date(date));
+      const rawDiff = row.detail?.difficulty;
+      const mappedDiff = rawDiff ? getDifficultyLabel(rawDiff) : '기본';
+      
+      if (!groups[mappedDiff]) {
+        groups[mappedDiff] = {
+          label: mappedDiff,
+          order: rawDiff ? getDifficultyOrder(rawDiff) : 4,
+          rawScores: []
+        };
       }
-
-      if (isTimeType) {
-        const duration = row.detail?.duration_sec;
-        if (duration !== undefined && duration !== null) {
-          if (!dailyBest[date] || duration < dailyBest[date]) {
-            dailyBest[date] = duration;
-          }
-        }
-      } else {
-        const score = row.score;
-        if (score !== undefined && score !== null) {
-          if (!dailyBest[date] || score > dailyBest[date]) {
-            dailyBest[date] = score;
-          }
-        }
-      }
+      groups[mappedDiff].rawScores.push(row);
     });
 
-    return Object.keys(dailyBest)
-      .sort((a, b) => a.localeCompare(b))
-      .map(date => {
-        // date는 YYYY-MM-DD 형태
-        const parts = date.split('-');
-        let mm, dd;
-        if (parts.length === 3) {
-          mm = parts[1];
-          dd = parts[2];
-        } else {
-          // 혹시 모를 파싱 예외 처리
-          mm = date;
-          dd = '';
+    // 2. 각 그룹별로 statsSummary 와 chartData 계산
+    const result = Object.values(groups).map(group => {
+      const isTimeType = currentGame.type === 'time';
+      const count = group.rawScores.length;
+      let bestRecord = null;
+      const dailyBest = {};
+
+      group.rawScores.forEach(row => {
+        let date = row.play_date;
+        if (date && date.includes('T')) {
+          date = getLocalDateString(new Date(date));
         }
-        
-        return {
-          date: parts.length === 3 ? `${mm}-${dd}` : date,
-          fullDate: date,
-          value: dailyBest[date]
-        };
+
+        if (isTimeType) {
+          const duration = row.detail?.duration_sec;
+          if (duration !== undefined && duration !== null) {
+            if (bestRecord === null || duration < bestRecord) bestRecord = duration;
+            if (!dailyBest[date] || duration < dailyBest[date]) dailyBest[date] = duration;
+          }
+        } else {
+          const score = row.score;
+          if (score !== undefined && score !== null) {
+            if (bestRecord === null || score > bestRecord) bestRecord = score;
+            if (!dailyBest[date] || score > dailyBest[date]) dailyBest[date] = score;
+          }
+        }
       });
+
+      const chartData = Object.keys(dailyBest)
+        .sort((a, b) => a.localeCompare(b))
+        .map(date => {
+          const parts = date.split('-');
+          let mm, dd;
+          if (parts.length === 3) {
+            mm = parts[1]; dd = parts[2];
+          } else {
+            mm = date; dd = '';
+          }
+          return {
+            date: parts.length === 3 ? `${mm}-${dd}` : date,
+            fullDate: date,
+            value: dailyBest[date]
+          };
+        });
+
+      return {
+        label: group.label,
+        order: group.order,
+        statsSummary: {
+          totalPlayCount: count,
+          bestRecord
+        },
+        chartData
+      };
+    });
+
+    // 쉬움 -> 보통 -> 어려움 -> 기본 순 정렬
+    return result.sort((a, b) => a.order - b.order);
   }, [filteredScores, currentGame]);
 
   // 표시용 포맷팅 함수들
@@ -303,100 +307,108 @@ export default function GameStatsPage() {
             )}
           </div>
         ) : (
-          <div className="space-y-6">
-            
-            {/* ── 요약 대시보드 카드 ── */}
-            <div className="bg-white rounded-[2rem] p-6 md:p-8 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 transition-all hover:shadow-md">
-              <div className="flex items-center gap-5">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0" 
-                  style={{ backgroundColor: `${currentGame.themeColor}10` }}>
-                  {React.createElement(ICON_MAP[currentGame.icon] || Brain, { 
-                    className: "w-8 h-8", 
-                    style: { color: currentGame.themeColor } 
-                  })}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-slate-400 font-bold text-xs uppercase tracking-wider">GAME TYPE</span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-extrabold text-white" style={{ backgroundColor: currentGame.themeColor }}>
-                      {currentGame.type === 'time' ? '타임어택' : '점수형'}
-                    </span>
+          <div className="space-y-12">
+            {groupedStats.length > 0 ? (
+              groupedStats.map((group, idx) => (
+                <div key={idx} className="space-y-6">
+                  {/* ── 요약 대시보드 카드 ── */}
+                  <div className="bg-white rounded-[2rem] p-6 md:p-8 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 transition-all hover:shadow-md">
+                    <div className="flex items-center gap-5">
+                      <div className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0" 
+                        style={{ backgroundColor: `${currentGame.themeColor}10` }}>
+                        {React.createElement(ICON_MAP[currentGame.icon] || Brain, { 
+                          className: "w-8 h-8", 
+                          style: { color: currentGame.themeColor } 
+                        })}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-slate-400 font-bold text-xs uppercase tracking-wider">GAME TYPE</span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-extrabold text-white" style={{ backgroundColor: currentGame.themeColor }}>
+                            {currentGame.type === 'time' ? '타임어택' : '점수형'}
+                          </span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-extrabold text-slate-600 bg-slate-100 border border-slate-200">
+                            {group.label} 난이도
+                          </span>
+                        </div>
+                        <h3 className="text-slate-800 font-black text-xl tracking-tight">{currentGame.name}</h3>
+                        <p className="text-slate-400 text-xs mt-1.5 font-medium">{currentGame.desc}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-8 border-t sm:border-t-0 sm:border-l border-slate-100 pt-4 sm:pt-0 sm:pl-8 shrink-0 w-full sm:w-auto">
+                      <div className="flex-1 sm:flex-initial">
+                        <span className="text-xs text-slate-400 font-bold block mb-1">플레이 횟수</span>
+                        <p className="text-2xl font-black text-slate-800 tabular-nums">
+                          {group.statsSummary.totalPlayCount} <span className="text-xs font-bold text-slate-400">회</span>
+                        </p>
+                      </div>
+                      <div className="flex-1 sm:flex-initial">
+                        <span className="text-xs text-slate-400 font-bold block mb-1">개인 최고 기록</span>
+                        <p className="text-2xl font-black tabular-nums" style={{ color: currentGame.themeColor }}>
+                          {group.statsSummary.bestRecord !== null ? formatValue(group.statsSummary.bestRecord) : '-'}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="text-slate-800 font-black text-xl tracking-tight">{currentGame.name}</h3>
-                  <p className="text-slate-400 text-xs mt-1.5 font-medium">{currentGame.desc}</p>
-                </div>
-              </div>
 
-              <div className="flex gap-8 border-t sm:border-t-0 sm:border-l border-slate-100 pt-4 sm:pt-0 sm:pl-8 shrink-0 w-full sm:w-auto">
-                <div className="flex-1 sm:flex-initial">
-                  <span className="text-xs text-slate-400 font-bold block mb-1">플레이 횟수</span>
-                  <p className="text-2xl font-black text-slate-800 tabular-nums">
-                    {statsSummary.totalPlayCount} <span className="text-xs font-bold text-slate-400">회</span>
-                  </p>
+                  {/* ── 차트 영역 ── */}
+                  {group.chartData.length > 0 && (
+                    <div className="bg-white rounded-[2.5rem] p-6 md:p-8 shadow-sm border border-slate-100 transition-all hover:shadow-md">
+                      <h3 className="font-extrabold text-base text-slate-700 flex items-center gap-2 mb-6">
+                        <TrendingDown className="w-5 h-5" style={{ color: currentGame.themeColor }} />
+                        최근 30일 기록 추이 ({currentGame.type === 'time' ? '소요 시간' : '점수'})
+                      </h3>
+                      
+                      <div className="w-full h-[320px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={group.chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <defs>
+                              <linearGradient id={`gradient-${currentGame.id}-${idx}`} x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor={currentGame.themeColor} stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor={currentGame.themeColor} stopOpacity={0.0}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                            <XAxis 
+                              dataKey="date" 
+                              axisLine={false} 
+                              tickLine={false} 
+                              tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 700 }}
+                              dy={10}
+                            />
+                            <YAxis 
+                              axisLine={false} 
+                              tickLine={false} 
+                              tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 700 }}
+                              tickFormatter={(val) => {
+                                if (currentGame.type === 'time') return `${Math.floor(val/60)}분`;
+                                return val;
+                              }}
+                            />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Area 
+                              type="monotone" 
+                              dataKey="value" 
+                              stroke={currentGame.themeColor} 
+                              strokeWidth={3.5} 
+                              fillOpacity={1} 
+                              fill={`url(#gradient-${currentGame.id}-${idx})`}
+                              dot={{ r: 4, fill: currentGame.themeColor, stroke: '#FFF', strokeWidth: 2 }}
+                              activeDot={{ r: 6, fill: currentGame.themeColor, stroke: '#FFF', strokeWidth: 2 }}
+                            />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                      {currentGame.type === 'time' && (
+                        <p className="text-slate-400 text-[11px] font-medium mt-4 text-center">
+                          ※ 소요 시간이 짧을수록(그래프가 하향할수록) 두뇌 훈련 속도가 빨라진 것을 의미합니다.
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <div className="flex-1 sm:flex-initial">
-                  <span className="text-xs text-slate-400 font-bold block mb-1">개인 최고 기록</span>
-                  <p className="text-2xl font-black tabular-nums" style={{ color: currentGame.themeColor }}>
-                    {statsSummary.bestRecord !== null ? formatValue(statsSummary.bestRecord) : '-'}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* ── 차트 영역 ── */}
-            {chartData.length > 0 ? (
-              <div className="bg-white rounded-[2.5rem] p-6 md:p-8 shadow-sm border border-slate-100 transition-all hover:shadow-md">
-                <h3 className="font-extrabold text-base text-slate-700 flex items-center gap-2 mb-6">
-                  <TrendingDown className="w-5 h-5" style={{ color: currentGame.themeColor }} />
-                  최근 30일 기록 추이 ({currentGame.type === 'time' ? '소요 시간' : '점수'})
-                </h3>
-                
-                <div className="w-full h-[320px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id={`gradient-${currentGame.id}`} x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor={currentGame.themeColor} stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor={currentGame.themeColor} stopOpacity={0.0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis 
-                        dataKey="date" 
-                        axisLine={false} 
-                        tickLine={false} 
-                        tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 700 }}
-                        dy={10}
-                      />
-                      <YAxis 
-                        axisLine={false} 
-                        tickLine={false} 
-                        tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 700 }}
-                        tickFormatter={(val) => {
-                          if (currentGame.type === 'time') return `${Math.floor(val/60)}분`;
-                          return val;
-                        }}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Area 
-                        type="monotone" 
-                        dataKey="value" 
-                        stroke={currentGame.themeColor} 
-                        strokeWidth={3.5} 
-                        fillOpacity={1} 
-                        fill={`url(#gradient-${currentGame.id})`}
-                        dot={{ r: 4, fill: currentGame.themeColor, stroke: '#FFF', strokeWidth: 2 }}
-                        activeDot={{ r: 6, fill: currentGame.themeColor, stroke: '#FFF', strokeWidth: 2 }}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-                {currentGame.type === 'time' && (
-                  <p className="text-slate-400 text-[11px] font-medium mt-4 text-center">
-                    ※ 소요 시간이 짧을수록(그래프가 하향할수록) 두뇌 훈련 속도가 빨라진 것을 의미합니다.
-                  </p>
-                )}
-              </div>
+              ))
             ) : (
               /* ── 기록이 없을 때 안내 (플레이 유도) ── */
               <div className="bg-white rounded-[2rem] p-10 md:p-12 shadow-sm border border-slate-100 text-center flex flex-col items-center justify-center space-y-5">
@@ -424,7 +436,6 @@ export default function GameStatsPage() {
                 )}
               </div>
             )}
-
           </div>
         )}
       </div>
