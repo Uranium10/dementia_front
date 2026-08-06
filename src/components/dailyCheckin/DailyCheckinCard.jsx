@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useDailyCheckin from '../../hooks/useDailyCheckin';
 import DailyCheckinModal from './DailyCheckinModal';
 import { MessageCircle, CheckCircle2 } from 'lucide-react';
@@ -27,6 +28,7 @@ function formatCompletedTime(isoString) {
 }
 
 export default function DailyCheckinCard({ session }) {
+  const navigate = useNavigate();
   const { status, todayCheckin, refresh, sendTurn } = useDailyCheckin(session);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
