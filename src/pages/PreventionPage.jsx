@@ -154,20 +154,20 @@ export default function PreventionPage() {
                   <span className="bg-blue-50 text-blue-600 px-2 py-1 rounded flex items-center gap-1"><BrainCircuit className="w-3 h-3" /> AI 추천</span>
                 </div>
               </div>
-              
+
               {/* 캐러셀 좌우 컨트롤 버튼 */}
               {featuredPosts.length > 1 && (
                 <>
                   <button
                     onClick={prevFeatured}
-                    className="absolute left-2 md:left-4 top-[25%] md:top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-white hover:scale-105 transition-all z-10 opacity-70 hover:opacity-100"
+                    className="absolute left-2 md:left-4 top-[25%] md:top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-white hover:scale-105 transition-all z-10 opacity-0 group-hover:opacity-100"
                     aria-label="이전 추천글"
                   >
                     <ChevronLeft className="w-6 h-6" />
                   </button>
                   <button
                     onClick={nextFeatured}
-                    className="absolute right-2 md:right-4 top-[25%] md:top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-white hover:scale-105 transition-all z-10 opacity-70 hover:opacity-100"
+                    className="absolute right-2 md:right-4 top-[25%] md:top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-white hover:scale-105 transition-all z-10 opacity-0 group-hover:opacity-100"
                     aria-label="다음 추천글"
                   >
                     <ChevronRight className="w-6 h-6" />
@@ -202,8 +202,8 @@ export default function PreventionPage() {
               key={cat}
               onClick={() => setSelectedCategory(cat)}
               className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-bold transition-colors ${selectedCategory === cat
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
                 }`}
             >
               {cat}
@@ -214,7 +214,7 @@ export default function PreventionPage() {
         {/* 3. 최신 정보 리스트 */}
         <section className="bg-white rounded-3xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-slate-800">치매 예방 최신 정보</h2>
+            <h2 className="text-xl font-bold text-slate-800">치매 예방 정보</h2>
             <button onClick={() => navigate('/posts')} className="text-blue-600 text-sm font-bold flex items-center hover:underline">
               더보기 <ArrowRight className="w-4 h-4 ml-1" />
             </button>
@@ -265,7 +265,7 @@ export default function PreventionPage() {
 
           <div className="relative">
             {/* 왼쪽 패들 */}
-            <button 
+            <button
               onClick={() => scrollGames('left')}
               className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-8 h-20 bg-white/90 border border-slate-200 shadow-md rounded-r-xl flex items-center justify-center opacity-0 group-hover/section:opacity-100 hover:bg-slate-50 hover:text-blue-600 transition-all text-slate-400"
             >
@@ -273,7 +273,7 @@ export default function PreventionPage() {
             </button>
 
             {/* 스크롤 컨테이너 */}
-            <div 
+            <div
               ref={gamesScrollRef}
               className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 pt-2 -mx-2 px-2"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
@@ -299,7 +299,7 @@ export default function PreventionPage() {
             </div>
 
             {/* 오른쪽 패들 */}
-            <button 
+            <button
               onClick={() => scrollGames('right')}
               className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-8 h-20 bg-white/90 border border-slate-200 shadow-md rounded-l-xl flex items-center justify-center opacity-0 group-hover/section:opacity-100 hover:bg-slate-50 hover:text-blue-600 transition-all text-slate-400"
             >
