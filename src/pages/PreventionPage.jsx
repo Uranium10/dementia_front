@@ -42,6 +42,11 @@ export default function PreventionPage() {
   const [featuredPosts, setFeaturedPosts] = useState([]);
   const [latestPosts, setLatestPosts] = useState([]);
   const [currentFeaturedIndex, setCurrentFeaturedIndex] = useState(0);
+  // 서피스 등 터치+마우스 겸용 기기에서 CSS group-hover만으로는 화살표가 안 뜨는
+  // 경우가 있어(브라우저가 터치 기기로 판단해 :hover 자체를 억제), 실제 마우스
+  // 진입/이탈 이벤트로 직접 상태를 잡는다. 이 이벤트는 진짜 마우스가 움직일 때
+  // 하이브리드 기기에서도 CSS :hover보다 안정적으로 발생한다.
+  const [isFeaturedHovering, setIsFeaturedHovering] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('전체');
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
@@ -130,6 +135,8 @@ export default function PreventionPage() {
           {currentFeatured ? (
             <div
               onClick={() => navigate(`/post/${currentFeatured.id}`)}
+              onMouseEnter={() => setIsFeaturedHovering(true)}
+              onMouseLeave={() => setIsFeaturedHovering(false)}
               className="bg-white rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-8 items-center relative overflow-hidden group cursor-pointer transition-all hover:shadow-md"
             >
               <div className="w-full md:w-1/2 aspect-video rounded-2xl overflow-hidden shrink-0">
@@ -160,14 +167,14 @@ export default function PreventionPage() {
                 <>
                   <button
                     onClick={prevFeatured}
-                    className="absolute left-2 md:left-4 top-[25%] md:top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-white hover:scale-105 transition-all z-10 opacity-0 group-hover:opacity-100"
+                    className={`absolute left-2 md:left-4 top-[25%] md:top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-white hover:scale-105 transition-all z-10 ${isFeaturedHovering ? 'opacity-100' : 'opacity-0'}`}
                     aria-label="이전 추천글"
                   >
                     <ChevronLeft className="w-6 h-6" />
                   </button>
                   <button
                     onClick={nextFeatured}
-                    className="absolute right-2 md:right-4 top-[25%] md:top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-white hover:scale-105 transition-all z-10 opacity-0 group-hover:opacity-100"
+                    className={`absolute right-2 md:right-4 top-[25%] md:top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-white hover:scale-105 transition-all z-10 ${isFeaturedHovering ? 'opacity-100' : 'opacity-0'}`}
                     aria-label="다음 추천글"
                   >
                     <ChevronRight className="w-6 h-6" />
