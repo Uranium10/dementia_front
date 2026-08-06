@@ -64,8 +64,8 @@ export default function DailyCheckinModal({ isOpen, onClose, sendTurn }) {
     try {
       // API 전송 시 id 등 불필요한 필드 제거, role과 content만 보냄
       const apiMessages = newMessages.map(m => ({ role: m.role, content: m.content }));
-      
-      const response = await sendTurn(apiMessages);
+
+      const response = await sendTurn(apiMessages, isFinishing);
       
       if (response.type === 'complete') {
         setIsCompleted(true);

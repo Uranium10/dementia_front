@@ -50,7 +50,7 @@ export default function useDailyCheckin(session) {
     return fetchTodayCheckin();
   };
 
-  const sendTurn = async (messages) => {
+  const sendTurn = async (messages, isFinishing = false) => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/checkin`, {
         method: 'POST',
@@ -58,7 +58,11 @@ export default function useDailyCheckin(session) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({ messages })
+        // is_finishing: "대화 마치기" 버튼을 직접 눌렀다는 명시적 신호.
+        // 이게 없으면 서버가 최소 턴 수/LLM 판단만으로 계속할지 결정하는데,
+        // 사용자가 1~2턴 만에 마치기를 눌러도 서버가 "아직 이르다"고 계속
+        // continue만 반환해 버튼이 안 먹히는 것처럼 보이는 문제가 있었다.
+        body: JSON.stringify({ messages, is_finishing: isFinishing })
       });
 
       if (response.status === 409) {
