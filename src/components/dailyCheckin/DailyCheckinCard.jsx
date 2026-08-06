@@ -72,7 +72,7 @@ export default function DailyCheckinCard({ session }) {
             <CheckCircle2 className="w-6 h-6" />
           </div>
           <div className="flex-1">
-            <div className="flex flex-col md:flex-row md:items-center gap-2 mb-1">
+            <div className="flex flex-col md:flex-row md:items-center gap-2">
               <h3 className="text-lg font-bold text-slate-700 flex items-center gap-2">
                 오늘의 체크를 완료했어요!
               </h3>
@@ -80,20 +80,19 @@ export default function DailyCheckinCard({ session }) {
                 {toneInfo.label}
               </span>
             </div>
-
-            <p className="text-sm text-slate-600 mt-2 line-clamp-2 leading-relaxed">
-              {todayCheckin.summary}
-            </p>
-            {todayCheckin.concern_note && (
-              <p className="text-xs text-amber-700 mt-2 bg-amber-50 p-2 rounded">
-                * {todayCheckin.concern_note}
-              </p>
-            )}
           </div>
         </div>
 
-        <div className="text-xs text-slate-400 font-medium shrink-0 ml-auto md:ml-0 mt-4 md:mt-0">
-          {completedTime ? `오늘 ${completedTime} 완료` : '오늘 완료'}
+        <div className="flex items-center gap-4 shrink-0 ml-auto md:ml-0 mt-4 md:mt-0">
+          <div className="text-xs text-slate-400 font-medium">
+            {completedTime ? `오늘 ${completedTime} 완료` : '오늘 완료'}
+          </div>
+          <button 
+            onClick={() => navigate('/daily-checkin-report')}
+            className="text-blue-600 font-bold text-sm hover:underline"
+          >
+            자세히 보기
+          </button>
         </div>
       </section>
     );

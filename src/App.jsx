@@ -15,6 +15,7 @@ import ColorMatchPage from './pages/games/ColorMatchPage';
 import SequencePage from './pages/games/SequencePage';
 import CardMatchPage from './pages/games/CardMatchPage';
 import GameStatsPage from './pages/GameStatsPage';
+import DailyCheckinReportPage from './pages/DailyCheckinReportPage';
 import './App.css';
 
 /**
@@ -49,6 +50,7 @@ function App() {
         <Route path="/game/sequence" element={<SequencePage />} />
         <Route path="/game/card-match" element={<CardMatchPage />} />
         <Route path="/game-stats" element={<GameStatsPage />} />
+        <Route path="/daily-checkin-report" element={<DailyCheckinReportPage />} />
       </Routes>
     </>
   );
