@@ -99,6 +99,16 @@ export default function PreventionPage() {
     }
   };
 
+  const nextFeatured = (e) => {
+    e.stopPropagation();
+    setCurrentFeaturedIndex((prev) => (prev + 1) % featuredPosts.length);
+  };
+
+  const prevFeatured = (e) => {
+    e.stopPropagation();
+    setCurrentFeaturedIndex((prev) => (prev - 1 + featuredPosts.length) % featuredPosts.length);
+  };
+
   const currentFeatured = featuredPosts[currentFeaturedIndex];
 
   return (
@@ -144,9 +154,26 @@ export default function PreventionPage() {
                   <span className="bg-blue-50 text-blue-600 px-2 py-1 rounded flex items-center gap-1"><BrainCircuit className="w-3 h-3" /> AI 추천</span>
                 </div>
               </div>
-              <div className="absolute right-6 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <ChevronRight className="w-5 h-5 text-slate-600" />
-              </div>
+              
+              {/* 캐러셀 좌우 컨트롤 버튼 */}
+              {featuredPosts.length > 1 && (
+                <>
+                  <button
+                    onClick={prevFeatured}
+                    className="absolute left-2 md:left-4 top-[25%] md:top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-white hover:scale-105 transition-all z-10 opacity-90 md:opacity-0 group-hover:opacity-100"
+                    aria-label="이전 추천글"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button
+                    onClick={nextFeatured}
+                    className="absolute right-2 md:right-4 top-[25%] md:top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-white hover:scale-105 transition-all z-10 opacity-90 md:opacity-0 group-hover:opacity-100"
+                    aria-label="다음 추천글"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                </>
+              )}
             </div>
           ) : (
             <div className="bg-white rounded-3xl p-10 text-center text-slate-400 shadow-sm">
